@@ -1,0 +1,3380 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0f0a1e" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>AI English Tutor — เรียนอังกฤษกับ AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0f0a1e;
+        --surface: rgba(255, 255, 255, 0.06);
+        --surface2: rgba(255, 255, 255, 0.1);
+        --text: #f1f5f9;
+        --muted: #94a3b8;
+        --primary: #6366f1;
+        --primary2: #8b5cf6;
+        --accent: #38bdf8;
+        --success: #34d399;
+        --danger: #f87171;
+        --user-bg: linear-gradient(135deg, #4f46e5, #7c3aed);
+        --ai-bg: rgba(255, 255, 255, 0.08);
+        --radius: 16px;
+        --shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        height: 100%;
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        font-family: "Prompt", sans-serif;
+        background: linear-gradient(
+          145deg,
+          #0f0a1e 0%,
+          #1e1b4b 40%,
+          #312e81 100%
+        );
+        min-height: 100%;
+        min-height: 100dvh;
+        color: var(--text);
+        line-height: 1.6;
+        -webkit-tap-highlight-color: rgba(99, 102, 241, 0.25);
+      }
+      .app {
+        max-width: 900px;
+        margin: 0 auto;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Top bar */
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
+        background: rgba(15, 10, 30, 0.85);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .topbar h1 {
+        font-size: 1rem;
+        font-weight: 600;
+        flex: 1;
+        min-width: 140px;
+      }
+      .topbar h1 span {
+        background: linear-gradient(90deg, #818cf8, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .api-wrap {
+        display: flex;
+        gap: 0.4rem;
+        flex: 2;
+        min-width: 200px;
+        max-width: 360px;
+      }
+      .api-settings {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.4rem;
+        flex-basis: 100%;
+        width: 100%;
+      }
+      .api-settings select,
+      .api-settings input[type="text"] {
+        padding: 0.45rem 0.75rem;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        font-family: inherit;
+        font-size: 0.8rem;
+      }
+      .api-settings input[type="text"] {
+        background: var(--surface);
+        color: var(--text);
+      }
+      .api-settings select {
+        min-width: 150px;
+        flex: 1;
+        max-width: 220px;
+        /* dropdown บน Windows มักเป็นพื้นขาว — บังคับ contrast ให้ชัด */
+        background-color: #eef2ff;
+        color: #1e1b4b;
+        color-scheme: light;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      .api-settings select:focus {
+        outline: 2px solid var(--primary);
+        outline-offset: 1px;
+      }
+      .api-settings select option {
+        background-color: #ffffff;
+        color: #1e293b;
+        font-weight: 500;
+      }
+      .api-settings select option:checked {
+        background-color: #6366f1;
+        color: #ffffff;
+      }
+      #modelInput {
+        min-width: 120px;
+        flex: 1;
+        max-width: 200px;
+      }
+      #baseUrlInput {
+        flex: 2;
+        min-width: 180px;
+      }
+      .api-settings .api-wrap {
+        max-width: none;
+        flex: 2;
+        min-width: 220px;
+      }
+      .free-tier {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.4rem;
+        flex-basis: 100%;
+        width: 100%;
+        padding-top: 0.15rem;
+      }
+      .free-label {
+        font-size: 0.78rem;
+        color: var(--success);
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .btn-free {
+        padding: 0.4rem 0.75rem;
+        border-radius: 50px;
+        border: 1px solid rgba(52, 211, 153, 0.45);
+        background: rgba(52, 211, 153, 0.12);
+        color: #6ee7b7;
+        font-family: inherit;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-free:hover {
+        background: rgba(52, 211, 153, 0.25);
+        transform: translateY(-1px);
+      }
+      .btn-free.active {
+        background: linear-gradient(135deg, #059669, #10b981);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+      }
+      .btn-free:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .free-badge {
+        padding: 0.3rem 0.65rem;
+        border-radius: 50px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        background: rgba(52, 211, 153, 0.2);
+        border: 1px solid rgba(52, 211, 153, 0.4);
+        color: #6ee7b7;
+        white-space: nowrap;
+      }
+      .api-wrap input {
+        flex: 1;
+        padding: 0.45rem 0.75rem;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: var(--surface);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.8rem;
+      }
+      .api-wrap button,
+      .btn-sm {
+        padding: 0.45rem 0.85rem;
+        border-radius: 10px;
+        border: none;
+        background: var(--primary);
+        color: white;
+        font-family: inherit;
+        font-size: 0.8rem;
+        cursor: pointer;
+        white-space: nowrap;
+        touch-action: manipulation;
+      }
+      .btn-sm:hover {
+        filter: brightness(1.1);
+      }
+      .btn-ghost {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--text);
+      }
+      .level-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        background: linear-gradient(
+          135deg,
+          rgba(99, 102, 241, 0.4),
+          rgba(139, 92, 246, 0.4)
+        );
+        border: 1px solid rgba(255, 255, 255, 0.15);
+      }
+      .nav-link {
+        color: var(--accent);
+        text-decoration: none;
+        font-size: 0.82rem;
+      }
+      .topbar-settings {
+        flex-basis: 100%;
+        width: 100%;
+      }
+      .topbar-settings-toggle {
+        display: none;
+        list-style: none;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        padding: 0.55rem 0.85rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--muted);
+        font-family: inherit;
+        font-size: 0.82rem;
+        font-weight: 500;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      .topbar-settings-toggle::-webkit-details-marker {
+        display: none;
+      }
+
+      /* Welcome / Onboarding */
+      .welcome {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.25rem;
+      }
+      .welcome-card {
+        background: var(--surface);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 2.5rem 2rem;
+        max-width: 480px;
+        width: 100%;
+        text-align: center;
+        box-shadow: var(--shadow);
+      }
+      .welcome-card h2 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .welcome-card p {
+        color: var(--muted);
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+      }
+      .level-btns {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .level-btn {
+        padding: 1rem 1.25rem;
+        border-radius: 14px;
+        border: 2px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        touch-action: manipulation;
+      }
+      .level-btn:hover {
+        border-color: var(--primary);
+        background: rgba(99, 102, 241, 0.2);
+        transform: translateY(-2px);
+      }
+
+      /* Main layout */
+      .main {
+        flex: 1;
+        display: none;
+        flex-direction: column;
+        min-height: 0;
+        padding: 0 0 1rem;
+      }
+      .main.active {
+        display: flex;
+        overflow: hidden;
+      }
+
+      .mode-tabs {
+        display: flex;
+        gap: 0.35rem;
+        padding: 0.75rem 1rem;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      .mode-tabs::-webkit-scrollbar {
+        display: none;
+      }
+      .mode-tab {
+        padding: 0.55rem 1rem;
+        border-radius: 50px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: transparent;
+        color: var(--muted);
+        font-family: inherit;
+        font-size: 0.82rem;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+        touch-action: manipulation;
+        flex-shrink: 0;
+      }
+      .mode-tab.active {
+        background: linear-gradient(135deg, var(--primary), var(--primary2));
+        color: white;
+        border-color: transparent;
+      }
+
+      .chat-area {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        min-height: 200px;
+      }
+      .bubble {
+        max-width: 88%;
+        padding: 0.85rem 1.1rem;
+        border-radius: 18px;
+        font-size: 0.92rem;
+        word-break: break-word;
+      }
+      .bubble.ai {
+        align-self: flex-start;
+        background: var(--ai-bg);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom-left-radius: 4px;
+      }
+      .bubble.user {
+        align-self: flex-end;
+        background: var(--user-bg);
+        border-bottom-right-radius: 4px;
+      }
+      .bubble.system {
+        align-self: center;
+        background: rgba(56, 189, 248, 0.15);
+        font-size: 0.82rem;
+        color: var(--accent);
+        max-width: 95%;
+        text-align: center;
+      }
+      .bubble .speak-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        margin-top: 0.5rem;
+        padding: 0.3rem 0.65rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+        font-size: 0.75rem;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .bubble .bubble-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-top: 0.5rem;
+      }
+      .bubble .bubble-actions .speak-btn {
+        margin-top: 0;
+      }
+      .bubble .translate-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.3rem 0.65rem;
+        border-radius: 8px;
+        border: 1px solid rgba(251, 191, 36, 0.35);
+        background: rgba(251, 191, 36, 0.12);
+        color: #fde68a;
+        font-size: 0.75rem;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .bubble .translate-btn:disabled {
+        opacity: 0.55;
+        cursor: wait;
+      }
+      .bubble .translate-box {
+        margin-top: 0.55rem;
+        padding: 0.55rem 0.7rem;
+        border-radius: 10px;
+        background: rgba(251, 191, 36, 0.1);
+        border: 1px solid rgba(251, 191, 36, 0.25);
+        font-size: 0.86rem;
+        line-height: 1.45;
+        color: #fef3c7;
+      }
+      .bubble .translate-box.hidden {
+        display: none;
+      }
+      .bubble pre,
+      .bubble code {
+        font-family: inherit;
+        white-space: pre-wrap;
+      }
+      .bubble strong {
+        color: #c4b5fd;
+      }
+
+      .loading {
+        align-self: flex-start;
+        display: flex;
+        gap: 0.35rem;
+        padding: 0.85rem 1.1rem;
+        background: var(--ai-bg);
+        border-radius: 18px;
+        border-bottom-left-radius: 4px;
+      }
+      .loading span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--primary2);
+        animation: bounce 1.2s infinite;
+      }
+      .loading span:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .loading span:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      @keyframes bounce {
+        0%,
+        80%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.4;
+        }
+        40% {
+          transform: translateY(-6px);
+          opacity: 1;
+        }
+      }
+
+      .input-bar {
+        padding: 0.75rem 1rem 1rem;
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        background: rgba(15, 10, 30, 0.9);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        position: sticky;
+        bottom: 0;
+        z-index: 50;
+        flex-shrink: 0;
+      }
+      .input-row {
+        display: flex;
+        gap: 0.5rem;
+      }
+      .input-row textarea {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: var(--surface);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.92rem;
+        resize: none;
+        min-height: 48px;
+        max-height: 120px;
+      }
+      .input-row textarea:focus {
+        outline: 2px solid var(--primary);
+      }
+      .input-actions {
+        display: flex;
+        gap: 0.4rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+      }
+      .btn-send {
+        padding: 0.65rem 1.25rem;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(135deg, var(--primary), var(--primary2));
+        color: white;
+        font-family: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        touch-action: manipulation;
+        flex-shrink: 0;
+      }
+      .btn-send:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .btn-stop {
+        background: var(--danger);
+      }
+      .mode-hint {
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin-bottom: 0.5rem;
+      }
+
+      /* Voice mode */
+      .voice-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.85rem;
+        padding: 0.5rem 0 0.25rem;
+      }
+      .voice-status {
+        font-size: 0.88rem;
+        color: var(--accent);
+        text-align: center;
+        min-height: 1.4em;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        background: rgba(56, 189, 248, 0.12);
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        max-width: 100%;
+      }
+      .voice-status.listening {
+        color: #fbbf24;
+        background: rgba(251, 191, 36, 0.12);
+        border-color: rgba(251, 191, 36, 0.35);
+      }
+      .voice-status.speaking {
+        color: #c4b5fd;
+        background: rgba(139, 92, 246, 0.15);
+        border-color: rgba(139, 92, 246, 0.35);
+      }
+      .voice-status.thinking {
+        color: var(--muted);
+        background: var(--surface);
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+      .voice-mic-btn {
+        width: 88px;
+        height: 88px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        font-size: 2.2rem;
+        color: white;
+        background: linear-gradient(135deg, var(--primary), var(--primary2));
+        box-shadow: 0 8px 28px rgba(99, 102, 241, 0.45);
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+      .voice-mic-btn:hover {
+        transform: scale(1.05);
+      }
+      .voice-mic-btn.listening {
+        animation: micPulse 1.2s infinite;
+        background: linear-gradient(135deg, #f59e0b, #ef4444);
+        box-shadow: 0 8px 28px rgba(239, 68, 68, 0.45);
+      }
+      .voice-mic-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none;
+      }
+      @keyframes micPulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+        }
+        50% {
+          box-shadow: 0 0 0 14px rgba(239, 68, 68, 0);
+        }
+      }
+      .voice-hint {
+        font-size: 0.78rem;
+        color: var(--muted);
+        text-align: center;
+      }
+      .voice-interim {
+        font-size: 0.82rem;
+        color: var(--muted);
+        font-style: italic;
+        text-align: center;
+        min-height: 1.2em;
+      }
+      .voice-stt-toggle {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.65rem;
+      }
+      .voice-stt-toggle label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.65rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.05);
+        font-size: 0.75rem;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .voice-stt-toggle label:has(input:checked) {
+        border-color: rgba(167, 139, 250, 0.55);
+        background: rgba(167, 139, 250, 0.18);
+        color: #e9d5ff;
+      }
+      .voice-stt-toggle input {
+        accent-color: var(--primary2);
+      }
+      .voice-confirm {
+        width: 100%;
+        max-width: 420px;
+        padding: 0.85rem 1rem;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(167, 139, 250, 0.35);
+        text-align: center;
+      }
+      .voice-confirm-label {
+        margin: 0 0 0.4rem;
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+      .voice-confirm-text {
+        margin: 0 0 0.75rem;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #fde68a;
+        line-height: 1.4;
+        word-break: break-word;
+      }
+      .voice-confirm-edit {
+        width: 100%;
+        margin: 0 0 0.75rem;
+        padding: 0.6rem 0.75rem;
+        border-radius: 10px;
+        border: 1px solid rgba(167, 139, 250, 0.45);
+        background: var(--surface);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.92rem;
+        resize: vertical;
+        min-height: 52px;
+      }
+      .voice-confirm-actions {
+        display: flex;
+        justify-content: center;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+      }
+      .voice-confirm-actions .btn-send {
+        padding: 0.45rem 1rem;
+        font-size: 0.82rem;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: max(1.5rem, calc(1rem + env(safe-area-inset-bottom)));
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0.75rem 1.25rem;
+        border-radius: 12px;
+        font-size: 0.88rem;
+        background: rgba(30, 27, 75, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: var(--shadow);
+        z-index: 200;
+        animation: fadeUp 0.3s ease;
+        max-width: min(90%, calc(100vw - 2rem));
+        text-align: center;
+      }
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateX(-50%) translateY(10px);
+        }
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .security-banner {
+        background: rgba(239, 68, 68, 0.18);
+        border-bottom: 1px solid rgba(239, 68, 68, 0.45);
+        color: #fecaca;
+        padding: 0.65rem 1rem;
+        font-size: 0.82rem;
+        text-align: center;
+        line-height: 1.5;
+      }
+      .security-banner.ok {
+        background: rgba(52, 211, 153, 0.12);
+        border-bottom-color: rgba(52, 211, 153, 0.35);
+        color: #6ee7b7;
+      }
+      .security-banner strong {
+        color: #fff;
+      }
+
+      @media (max-width: 768px) {
+        .app {
+          padding-left: env(safe-area-inset-left);
+          padding-right: env(safe-area-inset-right);
+        }
+        .topbar {
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.65rem 0.75rem;
+          padding-top: max(0.65rem, env(safe-area-inset-top));
+        }
+        .topbar h1 {
+          flex: 1 1 auto;
+          min-width: 0;
+          font-size: 0.9rem;
+        }
+        .nav-link {
+          font-size: 0.72rem;
+          white-space: nowrap;
+        }
+        .level-badge {
+          font-size: 0.72rem;
+          padding: 0.3rem 0.6rem;
+        }
+        #resetLevelBtn {
+          padding: 0.4rem 0.65rem;
+          min-height: 36px;
+        }
+        .topbar-settings-toggle {
+          display: flex;
+          width: 100%;
+        }
+        .topbar-settings:not([open]) .api-settings,
+        .topbar-settings:not([open]) .free-tier {
+          display: none;
+        }
+        .api-settings {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0.5rem;
+          padding-top: 0.5rem;
+        }
+        .api-settings select,
+        .api-settings input[type="text"],
+        #modelInput,
+        #baseUrlInput {
+          width: 100%;
+          max-width: none;
+          min-width: 0;
+          flex: none;
+          font-size: 16px;
+        }
+        .api-settings .api-wrap {
+          flex-direction: column;
+          min-width: 0;
+          width: 100%;
+        }
+        .api-wrap {
+          max-width: none;
+          flex-direction: column;
+          width: 100%;
+        }
+        .api-wrap input {
+          width: 100%;
+          font-size: 16px;
+        }
+        .api-wrap button {
+          width: 100%;
+          min-height: 44px;
+        }
+        .free-tier {
+          gap: 0.35rem;
+          padding-top: 0.35rem;
+        }
+        .free-label {
+          width: 100%;
+          white-space: normal;
+          font-size: 0.72rem;
+        }
+        .btn-free {
+          flex: 1 1 calc(50% - 0.2rem);
+          min-height: 44px;
+          text-align: center;
+        }
+        .welcome {
+          padding: 1.25rem 0.85rem;
+          align-items: flex-start;
+        }
+        .welcome-card {
+          padding: 1.75rem 1.25rem;
+          border-radius: 20px;
+        }
+        .welcome-card h2 {
+          font-size: 1.25rem;
+        }
+        .level-btn {
+          padding: 0.9rem 1rem;
+          font-size: 0.95rem;
+          min-height: 48px;
+        }
+        .mode-tabs {
+          padding: 0.6rem 0.75rem;
+          gap: 0.3rem;
+        }
+        .mode-tab {
+          padding: 0.5rem 0.85rem;
+          font-size: 0.78rem;
+          min-height: 40px;
+        }
+        .chat-area {
+          padding: 0.75rem;
+          gap: 0.65rem;
+        }
+        .bubble {
+          max-width: 92%;
+          padding: 0.75rem 0.95rem;
+          font-size: 0.88rem;
+        }
+        .bubble .speak-btn,
+        .bubble .translate-btn {
+          min-height: 36px;
+          padding: 0.35rem 0.75rem;
+        }
+        .input-bar {
+          padding: 0.65rem 0.75rem;
+          padding-bottom: max(0.85rem, env(safe-area-inset-bottom));
+        }
+        .input-row textarea {
+          font-size: 16px;
+          min-height: 44px;
+        }
+        .input-row .btn-send {
+          min-width: 52px;
+          min-height: 44px;
+          padding: 0.65rem 1rem;
+        }
+        .input-actions .btn-sm {
+          min-height: 40px;
+        }
+        .voice-mic-btn {
+          width: 76px;
+          height: 76px;
+          font-size: 2rem;
+        }
+        .voice-hint {
+          font-size: 0.72rem;
+          padding: 0 0.25rem;
+          line-height: 1.5;
+        }
+        .voice-confirm {
+          margin: 0 0.25rem;
+        }
+        .security-banner {
+          padding: 0.55rem 0.75rem;
+          font-size: 0.78rem;
+          padding-left: max(0.75rem, env(safe-area-inset-left));
+          padding-right: max(0.75rem, env(safe-area-inset-right));
+        }
+      }
+
+      @media (min-width: 769px) {
+        .topbar-settings > summary {
+          display: none !important;
+        }
+        .topbar-settings > .api-settings,
+        .topbar-settings > .free-tier {
+          display: flex !important;
+        }
+        /* บังคับแสดงเนื้อหาแม้ details ยังไม่มี attribute open */
+        .topbar-settings:not([open]) > :not(summary) {
+          display: flex !important;
+        }
+        .topbar-settings .free-tier {
+          flex-wrap: wrap;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="securityBanner" class="security-banner hidden"></div>
+    <div class="app">
+      <header class="topbar">
+        <h1>🤖 <span>AI English Tutor</span></h1>
+        <a href="index.html" class="nav-link">← แผนเรียน 6 เดือน</a>
+        <span class="level-badge" id="levelBadge">🌱 Beginner</span>
+        <button
+          type="button"
+          class="btn-sm btn-ghost"
+          id="resetLevelBtn"
+          title="ประเมินระดับใหม่"
+        >
+          ↺ Reset
+        </button>
+        <details class="topbar-settings" id="topbarSettings" open>
+          <summary class="topbar-settings-toggle">
+            ⚙️ ตั้งค่า API & ใช้ฟรี
+          </summary>
+          <div class="api-settings">
+            <select id="providerSelect" title="เลือกผู้ให้บริการ AI">
+              <option value="anthropic">Anthropic (Claude ตรง)</option>
+              <option value="maxplus_claude">MaxPlus AI — Claude</option>
+              <option value="maxplus_gpt">MaxPlus AI — GPT</option>
+              <option value="openai">OpenAI</option>
+              <option value="custom">อื่นๆ (OpenAI-compatible)</option>
+            </select>
+            <input
+              type="text"
+              id="modelInput"
+              placeholder="ชื่อ model"
+              title="ชื่อ model"
+              autocomplete="off"
+            />
+            <input
+              type="text"
+              id="baseUrlInput"
+              class="hidden"
+              placeholder="Base URL เช่น https://api.ai.cc"
+              title="Base URL (ไม่ต้องใส่ /v1/chat/completions)"
+              autocomplete="off"
+            />
+            <div class="api-wrap">
+              <input
+                type="password"
+                id="apiKeyInput"
+                placeholder="API Key"
+                autocomplete="off"
+              />
+              <button type="button" class="btn-sm" id="saveKeyBtn">
+                บันทึก
+              </button>
+              <button
+                type="button"
+                class="btn-sm btn-ghost"
+                id="deleteKeyBtn"
+                title="ลบ Key ที่บันทึกในเบราว์เซอร์"
+              >
+                🗑 ลบ Key
+              </button>
+            </div>
+          </div>
+          <div class="free-tier">
+            <span class="free-label"
+              >🆓 ใช้ฟรี
+              <small style="opacity: 0.75">(สลับอัตโนมัติเมื่อ limit)</small
+              >:</span
+            >
+            <!-- <button
+            type="button"
+            class="btn-free"
+            data-free="gemini"
+            title="Google Gemini — ฟรี ไม่ต้องบัตร"
+          >
+            🥇 Gemini
+          </button> -->
+            <button
+              type="button"
+              class="btn-free"
+              data-free="groq"
+              title="Groq — ฟรีจำกัด ไม่ต้องบัตร"
+            >
+              🥈 Groq
+            </button>
+            <button
+              type="button"
+              class="btn-free"
+              data-free="openrouter"
+              title="OpenRouter — โมเดลฟรีบางตัว"
+            >
+              🥉 OpenRouter
+            </button>
+            <span class="free-badge hidden" id="freeBadge">🆓 ฟรี</span>
+            <button
+              type="button"
+              class="btn-sm btn-ghost hidden"
+              id="ownKeyBtn"
+            >
+              ใช้ Key เอง
+            </button>
+          </div>
+        </details>
+      </header>
+
+      <!-- Onboarding -->
+      <section class="welcome" id="welcomeScreen">
+        <div class="welcome-card">
+          <h2>ยินดีต้อนรับ! 👋</h2>
+          <p>คุณคิดว่าตัวเองอยู่ระดับไหน?</p>
+          <div class="level-btns">
+            <button type="button" class="level-btn" data-level="beginner">
+              🌱 Beginner — เริ่มต้น / พื้นฐาน
+            </button>
+            <button type="button" class="level-btn" data-level="intermediate">
+              📘 Intermediate — ระดับกลาง
+            </button>
+            <button type="button" class="level-btn" data-level="assess">
+              🤷 ไม่แน่ใจ — ให้ AI ประเมิน 3 ข้อ
+            </button>
+          </div>
+          <p style="margin-top: 1.5rem; margin-bottom: 0; font-size: 0.8rem">
+            กด <strong style="color: #6ee7b7">⚙️ ตั้งค่า API & ใช้ฟรี</strong>
+            ด้านบน หรือใส่ API Key ของตัวเอง
+          </p>
+        </div>
+      </section>
+
+      <!-- Main app -->
+      <main class="main" id="mainApp">
+        <nav class="mode-tabs" id="modeTabs">
+          <button type="button" class="mode-tab" data-mode="conversation">
+            💬 Conversation
+          </button>
+          <button type="button" class="mode-tab" data-mode="voice">
+            🎙 Voice
+          </button>
+          <button type="button" class="mode-tab" data-mode="pronunciation">
+            🔊 Pronunciation
+          </button>
+          <button type="button" class="mode-tab" data-mode="grammar">
+            ✏️ Grammar
+          </button>
+          <button type="button" class="mode-tab" data-mode="vocabulary">
+            📚 Vocab 5 คำ
+          </button>
+        </nav>
+
+        <div class="chat-area" id="chatArea"></div>
+
+        <div class="input-bar">
+          <p class="mode-hint" id="modeHint"></p>
+
+          <div id="voicePanel" class="voice-panel hidden">
+            <div class="voice-stt-toggle" id="voiceSttToggle">
+              <label title="Whisper API — แม่นกว่า ใช้ token เล็กน้อย">
+                <input type="radio" name="voiceStt" value="whisper" checked />
+                🎯 Whisper แม่น
+              </label>
+              <label title="Web Speech API — เร็ว ฟรี แต่อาจเพี้ยน">
+                <input type="radio" name="voiceStt" value="browser" />
+                ⚡ Browser เร็ว
+              </label>
+            </div>
+            <div class="voice-status" id="voiceStatus">
+              กดเริ่มเพื่อฝึกพูดกับ AI
+            </div>
+            <p class="voice-interim" id="voiceInterim"></p>
+            <div id="voiceConfirm" class="voice-confirm hidden">
+              <p class="voice-confirm-label">คุณพูดว่า:</p>
+              <p id="voiceConfirmDisplay" class="voice-confirm-text"></p>
+              <textarea
+                id="voiceConfirmEdit"
+                class="voice-confirm-edit hidden"
+                rows="2"
+                placeholder="แก้ข้อความเป็นภาษาอังกฤษ..."
+              ></textarea>
+              <div class="voice-confirm-actions">
+                <button
+                  type="button"
+                  class="btn-sm btn-ghost"
+                  id="voiceConfirmEditBtn"
+                >
+                  ✏️ แก้
+                </button>
+                <button
+                  type="button"
+                  class="btn-sm btn-ghost"
+                  id="voiceConfirmRetryBtn"
+                >
+                  🎙 พูดใหม่
+                </button>
+                <button type="button" class="btn-send" id="voiceConfirmSendBtn">
+                  ส่ง
+                </button>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="voice-mic-btn"
+              id="voiceMicBtn"
+              title="เริ่ม / พูดตอบ"
+            >
+              🎙
+            </button>
+            <p class="voice-hint">
+              AI พูดก่อน → เปิดไมค์พูดตอบ → <strong>ตรวจข้อความ</strong> → AI
+              แก้และถามต่อ<br />
+              <strong>Whisper</strong> แม่นกว่า (Groq) ·
+              <strong>Browser</strong> เร็วแต่อาจเพี้ยน<br />
+              ต้องใช้ <strong>HTTPS</strong> — รัน
+              <code>start-server-https.bat</code> แล้วเข้า
+              <code>https://IP:8443/ai.html</code>
+            </p>
+            <button
+              type="button"
+              class="btn-sm btn-stop hidden"
+              id="voiceStopBtn"
+            >
+              ⏹ หยุด Voice
+            </button>
+          </div>
+
+          <div id="textInputWrap" class="input-row">
+            <textarea
+              id="userInput"
+              rows="1"
+              placeholder="พิมพ์ข้อความภาษาอังกฤษ..."
+            ></textarea>
+            <button type="button" class="btn-send" id="sendBtn">ส่ง</button>
+          </div>
+          <div class="input-actions">
+            <button type="button" class="btn-sm btn-ghost hidden" id="stopBtn">
+              ⏹ Stop สนทนา
+            </button>
+            <button type="button" class="btn-sm btn-ghost" id="clearChatBtn">
+              🗑 ล้างแชท
+            </button>
+            <button
+              type="button"
+              class="btn-sm btn-ghost hidden"
+              id="loadVocabBtn"
+            >
+              🎲 สุ่มคำใหม่
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      (function () {
+        const MAX_TURNS = 20;
+
+        const topbarSettings = document.getElementById("topbarSettings");
+        const desktopSettingsMq = window.matchMedia("(min-width: 769px)");
+        function syncTopbarSettingsOpen() {
+          if (!topbarSettings) return;
+          if (desktopSettingsMq.matches) {
+            topbarSettings.setAttribute("open", "");
+          } else if (!topbarSettings.hasAttribute("data-user-open")) {
+            topbarSettings.removeAttribute("open");
+          }
+        }
+        topbarSettings?.addEventListener("toggle", () => {
+          if (!desktopSettingsMq.matches) {
+            if (topbarSettings.open) {
+              topbarSettings.setAttribute("data-user-open", "");
+            } else {
+              topbarSettings.removeAttribute("data-user-open");
+            }
+          }
+        });
+        syncTopbarSettingsOpen();
+        desktopSettingsMq.addEventListener("change", syncTopbarSettingsOpen);
+
+        // ============================================================
+        // ฝัง API Key ฟรีที่นี่ (เจ้าของเว็บใส่เอง — ผู้ใช้กดปุ่ม 🆓 ได้เลย)
+        // Groq:   https://console.groq.com/keys
+        // OpenRouter: https://openrouter.ai/keys
+        // ============================================================
+        const FREE_PROVIDERS = ["groq", "openrouter"];
+
+        const FREE_KEYS = {
+          groq: "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",
+          openrouter:
+            "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",
+        };
+
+        const PROVIDERS = {
+          anthropic: {
+            label: "Anthropic (Claude ตรง)",
+            baseUrl: "https://api.anthropic.com",
+            format: "anthropic",
+            defaultModel: "claude-sonnet-4-6",
+            keyPlaceholder: "sk-ant-...",
+          },
+          maxplus_claude: {
+            label: "MaxPlus AI — Claude",
+            baseUrl: "https://api.maxplus-ai.cc",
+            format: "anthropic",
+            defaultModel: "claude-haiku-4-5-20251001",
+            keyPlaceholder: "ccsk-...",
+          },
+          maxplus_gpt: {
+            label: "MaxPlus AI — GPT",
+            baseUrl: "https://api.maxplus-ai.cc",
+            format: "openai",
+            defaultModel: "gpt-5.4-mini",
+            keyPlaceholder: "ccsk-...",
+          },
+          openai: {
+            label: "OpenAI",
+            baseUrl: "https://api.openai.com",
+            format: "openai",
+            defaultModel: "gpt-4o-mini",
+            keyPlaceholder: "sk-...",
+          },
+          custom: {
+            label: "อื่นๆ (OpenAI-compatible)",
+            baseUrl: "",
+            format: "openai",
+            defaultModel: "gpt-4o-mini",
+            keyPlaceholder: "API Key",
+          },
+          // gemini: {
+          //   label: "Google Gemini",
+          //   baseUrl: "https://generativelanguage.googleapis.com",
+          //   format: "gemini",
+          //   defaultModel: "gemini-2.0-flash",
+          //   keyPlaceholder: "ฟรี",
+          // },
+          groq: {
+            label: "Groq",
+            baseUrl: "https://api.groq.com/openai",
+            format: "openai",
+            defaultModel: "llama-3.3-70b-versatile",
+            keyPlaceholder: "ฟรี",
+          },
+          openrouter: {
+            label: "OpenRouter",
+            baseUrl: "https://openrouter.ai/api",
+            format: "openrouter",
+            defaultModel: "openai/gpt-4o",
+            keyPlaceholder: "ฟรี",
+          },
+        };
+
+        const STORAGE = {
+          apiKey: "ai_apiKey",
+          provider: "ai_provider",
+          model: "ai_model",
+          baseUrl: "ai_baseUrl",
+          useFree: "ai_useFree",
+          freeProvider: "ai_freeProvider",
+          level: "ai_level",
+          onboarding: "ai_onboardingDone",
+          correctStreak: "ai_correctStreak",
+          mistakes: "ai_mistakeCounts",
+          assessStep: "ai_assessStep",
+          assessAnswers: "ai_assessAnswers",
+          histories: "ai_modeHistories",
+          voiceStt: "ai_voiceStt",
+        };
+
+        const LEVEL_LABELS = {
+          beginner: "🌱 Beginner",
+          intermediate: "📘 Intermediate",
+        };
+
+        const MODE_HINTS = {
+          conversation:
+            "AI จะถามเป็นภาษาอังกฤษก่อน — ตอบเป็นภาษาอังกฤษ แล้ว AI จะแก้และถามต่อ",
+          voice:
+            "🎙 AI พูดถาม → คุณพูดตอบผ่านไมค์ → ตรวจข้อความ → AI แก้และถามต่อ",
+          pronunciation:
+            "พิมพ์คำหรือประโยคภาษาอังกฤษ — AI จะสอนออกเสียง + มีปุ่มฟังเสียง",
+          grammar:
+            "พิมพ์ประโยคภาษาอังกฤษ — AI จะตรวจ ✅/❌ และอธิบายเป็นภาษาไทย",
+          vocabulary:
+            'กด "สุ่มคำใหม่" หรือส่งข้อความเพื่อให้ AI สอน 5 คำตามระดับของคุณ',
+          assessment: "ตอบคำถามประเมินเป็นภาษาอังกฤษ (ตอบได้ทั้งไทย/อังกฤษ)",
+        };
+
+        let serverCapabilities = { proxy: false, transcribe: false };
+
+        let state = {
+          level: "beginner",
+          mode: "conversation",
+          assessing: false,
+          assessStep: 0,
+          assessAnswers: [],
+          messages: [],
+          loading: false,
+          conversationActive: false,
+          voiceActive: false,
+          voiceListening: false,
+          voiceSpeaking: false,
+          recognition: null,
+          whisperCapture: null,
+          lastOpenRouterModel: "",
+          micGranted: false,
+          voiceConfirmEditing: false,
+        };
+
+        const $ = (id) => document.getElementById(id);
+        const chatArea = $("chatArea");
+        const userInput = $("userInput");
+        const levelBadge = $("levelBadge");
+        const welcomeScreen = $("welcomeScreen");
+        const mainApp = $("mainApp");
+
+        function loadState() {
+          state.level = localStorage.getItem(STORAGE.level) || "beginner";
+          state.assessStep = parseInt(
+            localStorage.getItem(STORAGE.assessStep) || "0",
+            10,
+          );
+          try {
+            state.assessAnswers = JSON.parse(
+              localStorage.getItem(STORAGE.assessAnswers) || "[]",
+            );
+          } catch {
+            state.assessAnswers = [];
+          }
+          const key = localStorage.getItem(STORAGE.apiKey);
+          if (key) $("apiKeyInput").value = key;
+          const provider =
+            localStorage.getItem(STORAGE.provider) || "anthropic";
+          $("providerSelect").value = provider;
+          const savedModel = localStorage.getItem(STORAGE.model);
+          const savedBase = localStorage.getItem(STORAGE.baseUrl) || "";
+          if (savedBase) $("baseUrlInput").value = savedBase;
+          applyProviderUI(provider, savedModel);
+          updateFreeButtonsState();
+          if (localStorage.getItem(STORAGE.useFree) === "1") {
+            updateFreeUI(localStorage.getItem(STORAGE.freeProvider));
+          }
+          updateLevelBadge();
+          if (localStorage.getItem(STORAGE.onboarding) === "1") {
+            showMainApp();
+          }
+          initVoiceSttUI();
+        }
+
+        function getCorrectStreak() {
+          return parseInt(
+            localStorage.getItem(STORAGE.correctStreak) || "0",
+            10,
+          );
+        }
+        function setCorrectStreak(n) {
+          localStorage.setItem(STORAGE.correctStreak, String(n));
+        }
+        function getMistakes() {
+          try {
+            return JSON.parse(localStorage.getItem(STORAGE.mistakes) || "{}");
+          } catch {
+            return {};
+          }
+        }
+        function setMistakes(obj) {
+          localStorage.setItem(STORAGE.mistakes, JSON.stringify(obj));
+        }
+
+        function getHistories() {
+          try {
+            return JSON.parse(localStorage.getItem(STORAGE.histories) || "{}");
+          } catch {
+            return {};
+          }
+        }
+        function saveHistory(mode, messages) {
+          const h = getHistories();
+          h[mode] = messages;
+          localStorage.setItem(STORAGE.histories, JSON.stringify(h));
+        }
+        function loadHistory(mode) {
+          const h = getHistories();
+          return h[mode] || [];
+        }
+
+        function updateLevelBadge() {
+          levelBadge.textContent = LEVEL_LABELS[state.level] || state.level;
+          if (state.mode === "conversation" || state.mode === "voice") {
+            $("modeHint").textContent = getModeHint(state.mode);
+          }
+        }
+
+        function getModeHint(mode) {
+          const base = MODE_HINTS[mode] || "";
+          if (state.level !== "beginner") return base;
+          if (mode === "conversation") {
+            return base + " · Beginner: AI ใบ้คำสั้นๆ ให้ (💡 ใบ้)";
+          }
+          if (mode === "voice") {
+            return base + " · Beginner: AI ใบ้คำพูดสั้นๆ ให้ (💡 ใบ้)";
+          }
+          return base;
+        }
+
+        function showToast(msg) {
+          const t = document.createElement("div");
+          t.className = "toast";
+          t.textContent = msg;
+          document.body.appendChild(t);
+          setTimeout(() => t.remove(), 4000);
+        }
+
+        function showMainApp() {
+          welcomeScreen.classList.add("hidden");
+          mainApp.classList.add("active");
+          localStorage.setItem(STORAGE.onboarding, "1");
+          switchMode(state.mode || "conversation");
+        }
+
+        function buildSystemPrompt(extra = "") {
+          const level = state.level;
+          return `You are an English tutor for Thai learners. Always:
+- Correct mistakes kindly and explain rules in Thai
+- Give encouragement after corrections
+- Track user level: ${level} and adjust difficulty accordingly
+- If user answers correctly 5 times in a row, suggest moving up a level
+- If user makes same mistake 3 times, suggest reviewing basics
+- In conversation mode: always end your response with a new question in English
+- Be warm, patient, and supportive
+- Keep responses concise, not too long
+- Use markdown for formatting when helpful
+
+IMPORTANT: At the very end of every response, add exactly one hidden tracking line (user app will parse it):
+[[TRACK:{"correct":true|false,"mistake":"short_topic_or_empty"}]]
+
+${extra}`.trim();
+        }
+
+        function parseTracking(text) {
+          const m = text.match(/\[\[TRACK:(\{.*?\})\]\]/s);
+          if (!m) return { display: text, track: null };
+          try {
+            const track = JSON.parse(m[1]);
+            const display = text.replace(/\[\[TRACK:\{.*?\}\]\]/s, "").trim();
+            return { display, track };
+          } catch {
+            return { display: text, track: null };
+          }
+        }
+
+        function applyTracking(track) {
+          if (!track) return;
+          if (track.correct === true) {
+            const streak = getCorrectStreak() + 1;
+            setCorrectStreak(streak);
+            if (streak >= 5 && state.level === "beginner") {
+              state.level = "intermediate";
+              localStorage.setItem(STORAGE.level, state.level);
+              updateLevelBadge();
+              setCorrectStreak(0);
+              showToast("เก่งขึ้นแล้ว! ขอลองยากขึ้นนะ 🎉 → Intermediate");
+            }
+          } else if (track.correct === false) {
+            setCorrectStreak(0);
+            if (track.mistake) {
+              const mistakes = getMistakes();
+              const key = track.mistake.toLowerCase().slice(0, 40);
+              mistakes[key] = (mistakes[key] || 0) + 1;
+              setMistakes(mistakes);
+              if (mistakes[key] >= 3 && state.level === "intermediate") {
+                state.level = "beginner";
+                localStorage.setItem(STORAGE.level, state.level);
+                updateLevelBadge();
+                mistakes[key] = 0;
+                setMistakes(mistakes);
+                showToast("ลองทบทวนพื้นฐานก่อนนะครับ 💪 → Beginner");
+              }
+            }
+          }
+        }
+
+        function isRateLimitError(status, message) {
+          const m = (message || "").toLowerCase();
+          return (
+            status === 429 ||
+            status === 402 ||
+            status === 503 ||
+            m.includes("1010") ||
+            m.includes("cloudflare") ||
+            m.includes("rate limit") ||
+            m.includes("rate_limit") ||
+            m.includes("ratelimit") ||
+            m.includes("quota") ||
+            m.includes("too many requests") ||
+            m.includes("limit exceeded") ||
+            m.includes("insufficient") ||
+            m.includes("exceeded") ||
+            m.includes("capacity") ||
+            m.includes("overloaded")
+          );
+        }
+
+        function friendlyApiError(message, status) {
+          const m = (message || "").toLowerCase();
+          if (m.includes("1010") || m.includes("cloudflare")) {
+            return "Groq ถูกบล็อกชั่วคราว (1010) — กด 🆓 สลับ OpenRouter หรือใช้ API Key ตัวเอง";
+          }
+          return message || "API error";
+        }
+
+        function getFreeProviderOrder() {
+          const current =
+            localStorage.getItem(STORAGE.freeProvider) || FREE_PROVIDERS[0];
+          return [current, ...FREE_PROVIDERS.filter((p) => p !== current)];
+        }
+
+        function isFreeKeyConfigured(id) {
+          return (
+            FREE_PROVIDERS.includes(id) &&
+            (FREE_KEYS[id] || "").trim().length > 8
+          );
+        }
+
+        function isFreeMode() {
+          return localStorage.getItem(STORAGE.useFree) === "1";
+        }
+
+        function updateFreeButtonsState() {
+          document.querySelectorAll(".btn-free").forEach((btn) => {
+            const id = btn.dataset.free;
+            btn.disabled = !isFreeKeyConfigured(id);
+            btn.title = isFreeKeyConfigured(id)
+              ? btn.getAttribute("data-title") || btn.title
+              : PROVIDERS[id]?.label + " — ยังไม่ได้ตั้งค่า key";
+          });
+        }
+
+        function updateFreeUI(freeId) {
+          const isFree = !!freeId;
+          document.querySelectorAll(".btn-free").forEach((b) => {
+            b.classList.toggle("active", b.dataset.free === freeId);
+          });
+          $("providerSelect").disabled = isFree;
+          $("modelInput").readOnly = isFree;
+          $("saveKeyBtn").disabled = isFree;
+          $("deleteKeyBtn").classList.toggle("hidden", isFree);
+          $("apiKeyInput").disabled = isFree;
+          if (isFree) {
+            $("modelInput").value = PROVIDERS[freeId].defaultModel;
+            $("apiKeyInput").value = "";
+            $("apiKeyInput").placeholder = "ใช้ key ฝังในระบบ (ฟรี)";
+          } else {
+            const p =
+              PROVIDERS[$("providerSelect").value] || PROVIDERS.anthropic;
+            $("apiKeyInput").placeholder = "API Key (" + p.keyPlaceholder + ")";
+            const saved = localStorage.getItem(STORAGE.apiKey);
+            if (saved) $("apiKeyInput").value = saved;
+          }
+          $("freeBadge").classList.toggle("hidden", !isFree);
+          $("freeBadge").textContent = isFree
+            ? "🆓 " + PROVIDERS[freeId].label + " (สลับอัตโนมัติ)"
+            : "";
+          $("ownKeyBtn").classList.toggle("hidden", !isFree);
+        }
+
+        function activateFreeProvider(id) {
+          if (!FREE_PROVIDERS.includes(id)) return;
+          if (!isFreeKeyConfigured(id)) {
+            showToast(
+              "โหมดฟรี " +
+                (PROVIDERS[id]?.label || id) +
+                " ยังไม่พร้อม — admin ต้องใส่ key ใน ai.html",
+            );
+            return;
+          }
+          localStorage.setItem(STORAGE.useFree, "1");
+          localStorage.setItem(STORAGE.freeProvider, id);
+          updateFreeUI(id);
+          showToast("ใช้งานฟรีผ่าน " + PROVIDERS[id].label + " แล้ว 🎉");
+        }
+
+        function deactivateFreeMode(silent) {
+          localStorage.removeItem(STORAGE.useFree);
+          localStorage.removeItem(STORAGE.freeProvider);
+          updateFreeUI(null);
+          if (!silent) showToast("เปลี่ยนเป็นใช้ Key ของตัวเองแล้ว");
+        }
+
+        function getApiKey() {
+          if (isFreeMode()) {
+            const id =
+              localStorage.getItem(STORAGE.freeProvider) || FREE_PROVIDERS[0];
+            const key = (FREE_KEYS[id] || "").trim();
+            if (key) return key;
+            throw new Error("โหมดฟรียังไม่พร้อมใช้งาน");
+          }
+          return (
+            localStorage.getItem(STORAGE.apiKey) ||
+            $("apiKeyInput").value.trim()
+          );
+        }
+
+        function hasApiReady() {
+          if (isFreeMode()) {
+            return FREE_PROVIDERS.some((id) => isFreeKeyConfigured(id));
+          }
+          try {
+            return !!getApiKey();
+          } catch {
+            return false;
+          }
+        }
+
+        function getProviderConfig(forId) {
+          if (isFreeMode() || forId) {
+            const id =
+              forId ||
+              localStorage.getItem(STORAGE.freeProvider) ||
+              FREE_PROVIDERS[0];
+            const p = PROVIDERS[id] || PROVIDERS.groq;
+            return { id, ...p, model: p.defaultModel, baseUrl: p.baseUrl };
+          }
+          const id = $("providerSelect").value || "anthropic";
+          const p = PROVIDERS[id] || PROVIDERS.anthropic;
+          const model =
+            $("modelInput").value.trim() ||
+            localStorage.getItem(STORAGE.model) ||
+            p.defaultModel;
+          let baseUrl = p.baseUrl;
+          if (id === "custom") {
+            baseUrl = ($("baseUrlInput").value || "").trim().replace(/\/$/, "");
+          }
+          return { id, ...p, baseUrl, model };
+        }
+
+        function applyProviderUI(providerId, modelOverride) {
+          const p = PROVIDERS[providerId] || PROVIDERS.anthropic;
+          $("modelInput").value =
+            modelOverride ||
+            localStorage.getItem(STORAGE.model) ||
+            p.defaultModel;
+          $("apiKeyInput").placeholder = "API Key (" + p.keyPlaceholder + ")";
+          $("baseUrlInput").classList.toggle("hidden", providerId !== "custom");
+        }
+
+        function saveApiSettings() {
+          const key = $("apiKeyInput").value.trim();
+          if (!key) {
+            showToast("กรุณาใส่ API Key");
+            return;
+          }
+          if (isFreeMode()) deactivateFreeMode(true);
+          const provider = $("providerSelect").value;
+          const model = $("modelInput").value.trim();
+          const baseUrl = $("baseUrlInput").value.trim();
+          if (provider === "custom" && !baseUrl) {
+            showToast("กรุณาใส่ Base URL สำหรับ provider กำหนดเอง");
+            return;
+          }
+          if (!model) {
+            showToast("กรุณาใส่ชื่อ model");
+            return;
+          }
+          localStorage.setItem(STORAGE.apiKey, key);
+          localStorage.setItem(STORAGE.provider, provider);
+          localStorage.setItem(STORAGE.model, model);
+          if (provider === "custom") {
+            localStorage.setItem(STORAGE.baseUrl, baseUrl);
+          } else {
+            localStorage.removeItem(STORAGE.baseUrl);
+          }
+          showToast("บันทึกการตั้งค่า API แล้ว");
+        }
+
+        function deleteApiSettings() {
+          if (!confirm("ลบ API Key และการตั้งค่าที่บันทึกไว้ในเบราว์เซอร์?"))
+            return;
+          localStorage.removeItem(STORAGE.apiKey);
+          localStorage.removeItem(STORAGE.provider);
+          localStorage.removeItem(STORAGE.model);
+          localStorage.removeItem(STORAGE.baseUrl);
+          $("apiKeyInput").value = "";
+          const provider = $("providerSelect").value || "anthropic";
+          applyProviderUI(provider, null);
+          showToast("ลบ Key ที่บันทึกแล้ว");
+        }
+
+        function apiError(message, status) {
+          const err = new Error(message);
+          err.status = status || 0;
+          return err;
+        }
+
+        function canUseLocalProxy() {
+          return (
+            location.protocol === "http:" || location.protocol === "https:"
+          );
+        }
+
+        async function checkServerCapabilities() {
+          if (!canUseLocalProxy()) {
+            serverCapabilities = { proxy: false, transcribe: false };
+            updateVoiceSttUI();
+            return;
+          }
+          try {
+            const res = await fetch("/api/health");
+            if (!res.ok) throw new Error("health " + res.status);
+            const data = await res.json();
+            serverCapabilities = {
+              proxy: !!data.proxy,
+              transcribe: !!data.transcribe,
+            };
+          } catch {
+            serverCapabilities = { proxy: false, transcribe: false };
+          }
+          updateVoiceSttUI();
+        }
+
+        async function callViaLocalProxy(
+          cfg,
+          apiKey,
+          userMessages,
+          systemExtra,
+        ) {
+          const res = await fetch("/api/proxy", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              format: cfg.format,
+              providerId: cfg.id,
+              baseUrl: cfg.baseUrl,
+              model: cfg.model,
+              apiKey,
+              system: buildSystemPrompt(systemExtra),
+              messages: userMessages.map((m) => ({
+                role: m.role === "assistant" ? "assistant" : "user",
+                content: m.content,
+              })),
+              referer: location.origin,
+            }),
+          });
+          let data;
+          try {
+            data = await res.json();
+          } catch {
+            throw new Error(
+              "Proxy ไม่ตอบ — รัน start-server-https.bat แล้วเปิดผ่าน localhost",
+            );
+          }
+          if (!data.ok) {
+            throw apiError(data.message || "API error", data.status);
+          }
+          return data.text || "";
+        }
+
+        async function callAIWithProvider(
+          cfg,
+          apiKey,
+          userMessages,
+          systemExtra,
+        ) {
+          if (serverCapabilities.proxy) {
+            return callViaLocalProxy(cfg, apiKey, userMessages, systemExtra);
+          }
+          if (cfg.format === "anthropic") {
+            return callAnthropicAPI(cfg, apiKey, userMessages, systemExtra);
+          }
+          if (cfg.format === "gemini") {
+            return callGeminiAPI(cfg, apiKey, userMessages, systemExtra);
+          }
+          if (cfg.format === "openrouter") {
+            return callOpenRouterAPI(cfg, apiKey, userMessages, systemExtra);
+          }
+          return callOpenAIAPI(cfg, apiKey, userMessages, systemExtra);
+        }
+
+        async function callAI(userMessages, systemExtra = "") {
+          if (isFreeMode()) {
+            return callAIWithFreeFailover(userMessages, systemExtra);
+          }
+
+          const apiKey = getApiKey();
+          if (!apiKey) throw new Error("กรุณาใส่ API Key แล้วกดบันทึก");
+
+          const cfg = getProviderConfig();
+          if (!cfg.baseUrl) throw new Error("กรุณาใส่ Base URL ของ provider");
+
+          return callAIWithProvider(cfg, apiKey, userMessages, systemExtra);
+        }
+
+        async function callAIWithFreeFailover(userMessages, systemExtra) {
+          const order = getFreeProviderOrder();
+          let lastError = null;
+
+          for (const id of order) {
+            if (!isFreeKeyConfigured(id)) continue;
+            const cfg = getProviderConfig(id);
+            const apiKey = FREE_KEYS[id].trim();
+            try {
+              const result = await callAIWithProvider(
+                cfg,
+                apiKey,
+                userMessages,
+                systemExtra,
+              );
+              const prev = localStorage.getItem(STORAGE.freeProvider);
+              if (prev !== id) {
+                localStorage.setItem(STORAGE.freeProvider, id);
+                updateFreeUI(id);
+                showToast(
+                  "↔️ สลับไป " +
+                    PROVIDERS[id].label +
+                    " อัตโนมัติ (limit เต็ม)",
+                );
+              }
+              return result;
+            } catch (err) {
+              lastError = err;
+              if (isRateLimitError(err.status, err.message)) continue;
+              throw err;
+            }
+          }
+
+          throw (
+            lastError ||
+            new Error("โหมดฟรีหมด limit ทุก provider — ลองใหม่ภายหลัง")
+          );
+        }
+
+        async function callAnthropicAPI(
+          cfg,
+          apiKey,
+          userMessages,
+          systemExtra,
+        ) {
+          const url = cfg.baseUrl + "/v1/messages";
+          const headers = {
+            "Content-Type": "application/json",
+            "x-api-key": apiKey,
+            "anthropic-version": "2023-06-01",
+          };
+          if (cfg.id === "anthropic") {
+            headers["anthropic-dangerous-direct-browser-access"] = "true";
+          } else {
+            headers["Authorization"] = "Bearer " + apiKey;
+          }
+
+          const res = await fetch(url, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              model: cfg.model,
+              max_tokens: 1500,
+              system: buildSystemPrompt(systemExtra),
+              messages: userMessages,
+            }),
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            const msg =
+              data.error?.message ||
+              data.message ||
+              (typeof data.error === "string" ? data.error : null) ||
+              res.statusText;
+            throw apiError(msg, res.status);
+          }
+          return data.content?.[0]?.text || "";
+        }
+
+        async function callOpenAIAPI(cfg, apiKey, userMessages, systemExtra) {
+          const url = cfg.baseUrl + "/v1/chat/completions";
+          const messages = [
+            { role: "system", content: buildSystemPrompt(systemExtra) },
+            ...userMessages.map((m) => ({
+              role: m.role === "assistant" ? "assistant" : "user",
+              content: m.content,
+            })),
+          ];
+
+          const res = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + apiKey,
+            },
+            body: JSON.stringify({
+              model: cfg.model,
+              max_tokens: 1500,
+              messages,
+            }),
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            const msg = data.error?.message || data.message || res.statusText;
+            throw apiError(msg, res.status);
+          }
+          return data.choices?.[0]?.message?.content || "";
+        }
+
+        async function callGeminiAPI(cfg, apiKey, userMessages, systemExtra) {
+          const url =
+            cfg.baseUrl +
+            "/v1beta/models/" +
+            encodeURIComponent(cfg.model) +
+            ":generateContent?key=" +
+            encodeURIComponent(apiKey);
+
+          const contents = [];
+          for (const m of userMessages) {
+            const role = m.role === "assistant" ? "model" : "user";
+            const last = contents[contents.length - 1];
+            if (last && last.role === role) {
+              last.parts[0].text += "\n\n" + m.content;
+            } else {
+              contents.push({ role, parts: [{ text: m.content }] });
+            }
+          }
+          if (contents.length && contents[0].role === "model") {
+            contents.unshift({
+              role: "user",
+              parts: [{ text: "Let's continue our English lesson." }],
+            });
+          }
+
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: {
+                parts: [{ text: buildSystemPrompt(systemExtra) }],
+              },
+              contents,
+              generationConfig: { maxOutputTokens: 1500 },
+            }),
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            const msg =
+              data.error?.message || data.error?.status || res.statusText;
+            throw apiError(msg, res.status);
+          }
+          return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        }
+
+        async function callOpenRouterAPI(
+          cfg,
+          apiKey,
+          userMessages,
+          systemExtra,
+        ) {
+          const url = cfg.baseUrl + "/v1/chat/completions";
+          const messages = [
+            { role: "system", content: buildSystemPrompt(systemExtra) },
+            ...userMessages.map((m) => ({
+              role: m.role === "assistant" ? "assistant" : "user",
+              content: m.content,
+            })),
+          ];
+
+          const res = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + apiKey,
+              "HTTP-Referer": window.location.origin || "http://localhost",
+              "X-Title": "AI English Tutor",
+            },
+            body: JSON.stringify({
+              model: cfg.model,
+              max_tokens: 1500,
+              messages,
+            }),
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            const msg = data.error?.message || data.message || res.statusText;
+            throw apiError(msg, res.status);
+          }
+          return data.choices?.[0]?.message?.content || "";
+        }
+
+        async function callClaude(userMessages, systemExtra = "") {
+          return callAI(userMessages, systemExtra);
+        }
+
+        function simpleMarkdown(html) {
+          return html
+            .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+            .replace(/\n/g, "<br>");
+        }
+
+        function appendBubble(role, text, speakText) {
+          const div = document.createElement("div");
+          div.className = `bubble ${role}`;
+          div.innerHTML = simpleMarkdown(text);
+          if (role === "ai" && (speakText || hasEnglishText(text))) {
+            const actions = document.createElement("div");
+            actions.className = "bubble-actions";
+            if (speakText) {
+              const btn = document.createElement("button");
+              btn.type = "button";
+              btn.className = "speak-btn";
+              btn.textContent = "🔊 ฟังเสียง";
+              btn.addEventListener("click", () => speak(speakText));
+              actions.appendChild(btn);
+            }
+            if (state.mode === "voice" && hasEnglishText(speakText || text)) {
+              const translateBox = document.createElement("div");
+              translateBox.className = "translate-box hidden";
+              const tBtn = document.createElement("button");
+              tBtn.type = "button";
+              tBtn.className = "translate-btn";
+              tBtn.textContent = "🇹🇭 แปลไทย";
+              tBtn.addEventListener("click", () =>
+                toggleThaiTranslation(
+                  tBtn,
+                  translateBox,
+                  extractEnglishForTranslate(text, speakText),
+                ),
+              );
+              actions.appendChild(tBtn);
+              div.appendChild(actions);
+              div.appendChild(translateBox);
+            } else if (speakText) {
+              div.appendChild(actions);
+            }
+          }
+          chatArea.appendChild(div);
+          chatArea.scrollTop = chatArea.scrollHeight;
+          return div;
+        }
+
+        function hasEnglishText(s) {
+          return /[a-zA-Z]{2,}/.test(s || "");
+        }
+
+        function extractEnglishForTranslate(display, speakText) {
+          if (speakText?.trim()) return speakText.trim();
+          const lines = display
+            .split("\n")
+            .filter((l) => /[a-zA-Z]{3,}/.test(l));
+          return lines.join(" ").trim() || display.trim();
+        }
+
+        async function fetchThaiTranslation(englishText) {
+          return callAI(
+            [
+              {
+                role: "user",
+                content:
+                  "แปลข้อความภาษาอังกฤษนี้เป็นภาษาไทยให้ผู้เรียนไทยเข้าใจง่าย ถ้ามีคำยากให้อธิบายสั้นๆ ในวงเล็บ\n\n" +
+                  englishText,
+              },
+            ],
+            "You translate English to Thai for learners. Output Thai only. Be concise.",
+          );
+        }
+
+        async function toggleThaiTranslation(btn, box, englishText) {
+          if (box.dataset.loaded === "1") {
+            box.classList.toggle("hidden");
+            btn.textContent = box.classList.contains("hidden")
+              ? "🇹🇭 แปลไทย"
+              : "🇹🇭 ซ่อนแปล";
+            return;
+          }
+          btn.disabled = true;
+          btn.textContent = "⏳ กำลังแปล...";
+          try {
+            const th = await fetchThaiTranslation(englishText);
+            box.innerHTML = simpleMarkdown(th.trim());
+            box.dataset.loaded = "1";
+            box.classList.remove("hidden");
+            btn.textContent = "🇹🇭 ซ่อนแปล";
+            chatArea.scrollTop = chatArea.scrollHeight;
+          } catch (err) {
+            showToast("แปลไม่สำเร็จ: " + err.message);
+            btn.textContent = "🇹🇭 แปลไทย";
+          } finally {
+            btn.disabled = false;
+          }
+        }
+
+        function showLoading() {
+          const el = document.createElement("div");
+          el.className = "loading";
+          el.id = "loadingIndicator";
+          el.innerHTML = "<span></span><span></span><span></span>";
+          chatArea.appendChild(el);
+          chatArea.scrollTop = chatArea.scrollHeight;
+        }
+        function hideLoading() {
+          $("loadingIndicator")?.remove();
+        }
+
+        function speak(text) {
+          if (!("speechSynthesis" in window)) {
+            showToast("เบราว์เซอร์ไม่รองรับ Text-to-Speech");
+            return;
+          }
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = "en-US";
+          u.rate = 0.85;
+          window.speechSynthesis.speak(u);
+        }
+
+        function speakAsync(text) {
+          return new Promise((resolve) => {
+            if (!text?.trim() || !("speechSynthesis" in window)) {
+              resolve();
+              return;
+            }
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text.trim());
+            u.lang = "en-US";
+            u.rate = 0.88;
+            u.onend = () => resolve();
+            u.onerror = () => resolve();
+            window.speechSynthesis.speak(u);
+          });
+        }
+
+        function isSecureForVoice() {
+          if (window.isSecureContext) return true;
+          const h = location.hostname;
+          return h === "localhost" || h === "127.0.0.1";
+        }
+
+        function updateSecurityBanner() {
+          const el = $("securityBanner");
+          if (location.protocol === "file:") {
+            el.classList.remove("hidden", "ok");
+            el.innerHTML =
+              "⚠️ <strong>อย่าเปิดไฟล์ตรง (file://)</strong> — ไมค์ใช้ไม่ได้และต้อง Allow ทุกครั้ง<br>" +
+              "ใช้ <strong>start-server-https.bat</strong> แล้วเข้า <strong>https://localhost:8443/ai.html</strong>";
+            return;
+          }
+          if (!isSecureForVoice()) {
+            el.classList.remove("hidden", "ok");
+            el.innerHTML =
+              "⚠️ Voice/ไมค์ ต้องใช้ <strong>HTTPS</strong> — รัน <strong>start-server-https.bat</strong><br>" +
+              "เครื่องอื่นใน WiFi: <strong>https://IP-เครื่องหลัก:8443/ai.html</strong> (ไม่ใช่ http)";
+            return;
+          }
+          el.classList.remove("hidden");
+          el.classList.add("ok");
+          if (serverCapabilities.proxy) {
+            const whisperNote = serverCapabilities.transcribe
+              ? " + Whisper Voice"
+              : " (⚠️ restart server สำหรับ Whisper)";
+            el.innerHTML =
+              "✅ Server + AI Proxy พร้อม — MaxPlus/Groq/OpenRouter" +
+              whisperNote +
+              " | Allow mic while visiting";
+          } else {
+            el.innerHTML =
+              "✅ HTTPS พร้อมใช้ Voice — อนุญาตไมค์ครั้งเดียว แล้วเลือก <strong>Allow while visiting the site</strong>";
+          }
+        }
+
+        async function ensureMicPermission() {
+          if (state.micGranted) return true;
+          if (!isSecureForVoice()) {
+            updateSecurityBanner();
+            showToast("ใช้ start-server-https.bat ก่อนเปิด Voice");
+            return false;
+          }
+          if (!navigator.mediaDevices?.getUserMedia) {
+            showToast("เบราว์เซอร์ไม่รองรับไมค์");
+            return false;
+          }
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              audio: true,
+            });
+            stream.getTracks().forEach((t) => t.stop());
+            state.micGranted = true;
+            return true;
+          } catch {
+            setVoiceStatus("❌ ไม่อนุญาตไมค์ — กด Allow", "");
+            showToast(
+              'กด Allow แล้วเลือก "Allow while visiting the site" เพื่อจำครั้งเดียว',
+            );
+            return false;
+          }
+        }
+
+        function setVoiceStatus(text, kind = "") {
+          const el = $("voiceStatus");
+          el.textContent = text;
+          el.className = "voice-status" + (kind ? " " + kind : "");
+        }
+
+        function hideVoiceConfirm() {
+          $("voiceConfirm").classList.add("hidden");
+          $("voiceConfirmEdit").classList.add("hidden");
+          $("voiceConfirmDisplay").classList.remove("hidden");
+          state.voiceConfirmEditing = false;
+          $("voiceConfirmEditBtn").textContent = "✏️ แก้";
+        }
+
+        function showVoiceConfirm(text) {
+          const t = text.trim();
+          if (!t) return;
+          $("voiceInterim").textContent = "";
+          $("voiceConfirmDisplay").textContent = t;
+          $("voiceConfirmEdit").value = t;
+          hideVoiceConfirm();
+          $("voiceConfirm").classList.remove("hidden");
+          setVoiceStatus("ตรวจข้อความก่อนส่ง — แก้ได้ถ้าถอดเสียงผิด", "");
+          $("voiceMicBtn").disabled = true;
+        }
+
+        function getVoiceConfirmText() {
+          if (
+            state.voiceConfirmEditing &&
+            !$("voiceConfirmEdit").classList.contains("hidden")
+          ) {
+            return $("voiceConfirmEdit").value.trim();
+          }
+          return $("voiceConfirmDisplay").textContent.trim();
+        }
+
+        function toggleVoiceConfirmEdit() {
+          state.voiceConfirmEditing = !state.voiceConfirmEditing;
+          if (state.voiceConfirmEditing) {
+            $("voiceConfirmEdit").value = $(
+              "voiceConfirmDisplay",
+            ).textContent.trim();
+            $("voiceConfirmDisplay").classList.add("hidden");
+            $("voiceConfirmEdit").classList.remove("hidden");
+            $("voiceConfirmEditBtn").textContent = "👁 ดู";
+            $("voiceConfirmEdit").focus();
+          } else {
+            const t = $("voiceConfirmEdit").value.trim();
+            if (t) $("voiceConfirmDisplay").textContent = t;
+            $("voiceConfirmEdit").classList.add("hidden");
+            $("voiceConfirmDisplay").classList.remove("hidden");
+            $("voiceConfirmEditBtn").textContent = "✏️ แก้";
+          }
+        }
+
+        function retryVoiceCapture() {
+          hideVoiceConfirm();
+          $("voiceMicBtn").disabled = false;
+          setVoiceStatus("พร้อมฟัง — พูดตอบได้เลย", "listening");
+          if (state.voiceActive && !state.loading && !state.voiceSpeaking) {
+            startListening();
+          }
+        }
+
+        function submitVoiceConfirm() {
+          const text = getVoiceConfirmText();
+          if (!text) {
+            showToast("พิมพ์หรือพูดข้อความก่อนส่ง");
+            return;
+          }
+          hideVoiceConfirm();
+          sendVoiceMessage(text);
+        }
+
+        function isVoiceConfirmVisible() {
+          return !$("voiceConfirm").classList.contains("hidden");
+        }
+
+        function destroyRecognition() {
+          const rec = state.recognition;
+          state.recognition = null;
+          if (!rec) return;
+          try {
+            rec.onstart = rec.onresult = rec.onerror = rec.onend = null;
+            rec.abort();
+          } catch {
+            /* ignore */
+          }
+        }
+
+        function getSpeechRecognitionSupported() {
+          return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+        }
+
+        function getTranscribeConfig() {
+          if (isFreeKeyConfigured("groq")) {
+            return {
+              baseUrl: PROVIDERS.groq.baseUrl,
+              apiKey: FREE_KEYS.groq.trim(),
+              model: "whisper-large-v3-turbo",
+            };
+          }
+          const id = isFreeMode()
+            ? localStorage.getItem(STORAGE.freeProvider) || "groq"
+            : localStorage.getItem(STORAGE.provider) || "anthropic";
+          if (id === "groq") {
+            const key = getApiKey();
+            if (key) {
+              return {
+                baseUrl: PROVIDERS.groq.baseUrl,
+                apiKey: key,
+                model: "whisper-large-v3-turbo",
+              };
+            }
+          }
+          if (id === "openai") {
+            const key = getApiKey();
+            if (key) {
+              return {
+                baseUrl: PROVIDERS.openai.baseUrl,
+                apiKey: key,
+                model: "whisper-1",
+              };
+            }
+          }
+          return null;
+        }
+
+        function canUseWhisper() {
+          return serverCapabilities.transcribe && !!getTranscribeConfig();
+        }
+
+        function getVoiceSttMode() {
+          const el = document.querySelector('input[name="voiceStt"]:checked');
+          return el?.value || "browser";
+        }
+
+        function initVoiceSttUI() {
+          const saved = localStorage.getItem(STORAGE.voiceStt);
+          const mode =
+            saved === "browser" || saved === "whisper"
+              ? saved
+              : canUseWhisper()
+                ? "whisper"
+                : "browser";
+          document.querySelectorAll('input[name="voiceStt"]').forEach((r) => {
+            r.checked = r.value === mode;
+          });
+          updateVoiceSttUI();
+        }
+
+        function updateVoiceSttUI() {
+          const whisperAvail = canUseWhisper();
+          const whisperLabel = document
+            .querySelector('input[name="voiceStt"][value="whisper"]')
+            ?.closest("label");
+          if (whisperLabel) {
+            whisperLabel.style.opacity = whisperAvail ? "1" : "0.45";
+            whisperLabel.title = whisperAvail
+              ? "Whisper API — แม่นกว่า ใช้ token เล็กน้อย"
+              : serverCapabilities.transcribe === false &&
+                  serverCapabilities.proxy
+                ? "Server เก่า — ปิด server (Ctrl+C) แล้วรัน start-server-https.bat ใหม่"
+                : "Whisper ต้องเปิดผ่าน start-server-https.bat + Groq/OpenAI";
+          }
+          if (!whisperAvail && getVoiceSttMode() === "whisper") {
+            const browser = document.querySelector(
+              'input[name="voiceStt"][value="browser"]',
+            );
+            if (browser) browser.checked = true;
+            localStorage.setItem(STORAGE.voiceStt, "browser");
+          }
+        }
+
+        async function transcribeViaWhisper(audioBlob) {
+          const cfg = getTranscribeConfig();
+          if (!cfg) {
+            throw new Error("Whisper ต้องใช้ Groq หรือ OpenAI key");
+          }
+          const b64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(",")[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(audioBlob);
+          });
+          const res = await fetch("/api/transcribe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              audio: b64,
+              mimeType: audioBlob.type || "audio/webm",
+              baseUrl: cfg.baseUrl,
+              apiKey: cfg.apiKey,
+              model: cfg.model,
+              language: "en",
+            }),
+          });
+          if (res.status === 404) {
+            throw new Error(
+              "Server เก่า — ปิดหน้าต่าง server (Ctrl+C) แล้วรัน start-server-https.bat ใหม่",
+            );
+          }
+          const raw = await res.text();
+          let data;
+          try {
+            data = JSON.parse(raw);
+          } catch {
+            throw new Error(
+              "Server ไม่รองรับ Whisper — ปิด server แล้วรัน start-server-https.bat ใหม่",
+            );
+          }
+          if (!data.ok) {
+            throw apiError(data.message || "Whisper error", data.status);
+          }
+          return (data.text || "").trim();
+        }
+
+        function stopWhisperCapture(transcribe) {
+          const cap = state.whisperCapture;
+          if (!cap || cap.stopping) return;
+          cap.stopping = true;
+          clearTimeout(cap.pollId);
+          clearTimeout(cap.maxTimeoutId);
+          state.voiceListening = false;
+          $("voiceMicBtn").classList.remove("listening");
+
+          const finish = async () => {
+            cap.stream.getTracks().forEach((t) => t.stop());
+            try {
+              await cap.audioCtx.close();
+            } catch {
+              /* ignore */
+            }
+            state.whisperCapture = null;
+
+            if (!transcribe || !state.voiceActive) {
+              $("voiceMicBtn").disabled = false;
+              return;
+            }
+
+            const blob = new Blob(cap.chunks, { type: cap.mimeType });
+            if (blob.size < 800) {
+              setVoiceStatus("ไม่ได้ยินเสียง — ลองพูดอีกครั้ง", "");
+              $("voiceMicBtn").disabled = false;
+              setTimeout(() => {
+                if (
+                  state.voiceActive &&
+                  !state.loading &&
+                  !state.voiceSpeaking
+                ) {
+                  startListening();
+                }
+              }, 600);
+              return;
+            }
+
+            setVoiceStatus("📝 ถอดเสียง Whisper...", "thinking");
+            $("voiceMicBtn").disabled = true;
+            try {
+              const text = await transcribeViaWhisper(blob);
+              $("voiceInterim").textContent = text || "";
+              if (text.trim()) {
+                showVoiceConfirm(text.trim());
+              } else {
+                setVoiceStatus("ไม่ได้ยินเสียง — ลองพูดอีกครั้ง", "");
+                $("voiceMicBtn").disabled = false;
+                startListening();
+              }
+            } catch (err) {
+              const msg = friendlyApiError(err.message, err.status);
+              showToast(
+                msg.includes("1010") || msg.includes("Groq")
+                  ? "Whisper (Groq) ไม่ว่าง — ใช้ Browser แทน"
+                  : "Whisper: " + msg + " — ใช้ Browser",
+              );
+              $("voiceMicBtn").disabled = false;
+              if (getSpeechRecognitionSupported()) {
+                startBrowserListening();
+              } else {
+                setVoiceStatus("ถอดเสียงไม่สำเร็จ — กดไมค์ลองใหม่", "");
+              }
+            }
+          };
+
+          cap.recorder.onstop = finish;
+          try {
+            if (cap.recorder.state !== "inactive") cap.recorder.stop();
+          } catch {
+            finish();
+          }
+        }
+
+        async function startWhisperListening() {
+          if (
+            !state.voiceActive ||
+            state.voiceSpeaking ||
+            state.voiceListening
+          ) {
+            return;
+          }
+          if (!(await ensureMicPermission())) return;
+          if (!canUseWhisper()) {
+            showToast("Whisper ไม่พร้อม — ใช้ Browser แทน");
+            return startBrowserListening();
+          }
+
+          stopWhisperCapture(false);
+          destroyRecognition();
+
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          const mimeType = MediaRecorder.isTypeSupported(
+            "audio/webm;codecs=opus",
+          )
+            ? "audio/webm;codecs=opus"
+            : "audio/webm";
+          const chunks = [];
+          const recorder = new MediaRecorder(stream, { mimeType });
+          const audioCtx = new AudioContext();
+          const analyser = audioCtx.createAnalyser();
+          audioCtx.createMediaStreamSource(stream).connect(analyser);
+
+          const cap = {
+            stream,
+            recorder,
+            audioCtx,
+            analyser,
+            chunks,
+            mimeType,
+            pollId: null,
+            maxTimeoutId: null,
+            stopping: false,
+            heardSpeech: false,
+            loudMs: 0,
+            startedAt: Date.now(),
+          };
+          state.whisperCapture = cap;
+
+          recorder.ondataavailable = (e) => {
+            if (e.data.size) chunks.push(e.data);
+          };
+
+          recorder.start(200);
+          state.voiceListening = true;
+          setVoiceStatus("🎤 ฟังอยู่... (Whisper)", "listening");
+          $("voiceMicBtn").classList.add("listening");
+          $("voiceMicBtn").disabled = true;
+          $("voiceInterim").textContent = "";
+
+          const SILENCE_THRESHOLD = 0.018;
+          const SILENCE_MS = 1400;
+          const MIN_RECORD_MS = 700;
+          const MAX_RECORD_MS = 15000;
+
+          const pollVolume = () => {
+            if (!state.whisperCapture || cap.stopping) return;
+            const data = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteTimeDomainData(data);
+            let sum = 0;
+            for (const v of data) sum += Math.abs(v - 128);
+            const level = sum / data.length / 128;
+
+            if (level > SILENCE_THRESHOLD) {
+              cap.heardSpeech = true;
+              cap.loudMs = 0;
+            } else if (cap.heardSpeech) {
+              cap.loudMs += 100;
+              if (
+                cap.loudMs >= SILENCE_MS &&
+                Date.now() - cap.startedAt >= MIN_RECORD_MS
+              ) {
+                stopWhisperCapture(true);
+                return;
+              }
+            }
+            cap.pollId = setTimeout(pollVolume, 100);
+          };
+          cap.pollId = setTimeout(pollVolume, 100);
+          cap.maxTimeoutId = setTimeout(
+            () => stopWhisperCapture(true),
+            MAX_RECORD_MS,
+          );
+        }
+
+        function initSpeechRecognition() {
+          const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+          if (!SR) return null;
+          const rec = new SR();
+          rec.lang = "en-US";
+          rec.continuous = false;
+          rec.interimResults = true;
+          rec.maxAlternatives = 1;
+
+          rec.onstart = () => {
+            state.voiceListening = true;
+            setVoiceStatus(
+              "🎤 ฟังอยู่... พูดเป็นภาษาอังกฤษได้เลย",
+              "listening",
+            );
+            $("voiceMicBtn").classList.add("listening");
+            $("voiceMicBtn").disabled = true;
+          };
+
+          rec.onresult = (e) => {
+            let interim = "";
+            let final = "";
+            for (let i = e.resultIndex; i < e.results.length; i++) {
+              const t = e.results[i][0].transcript;
+              if (e.results[i].isFinal) final += t;
+              else interim += t;
+            }
+            $("voiceInterim").textContent = interim || final || "";
+            if (final.trim()) {
+              const text = final.trim();
+              state.voiceListening = false;
+              destroyRecognition();
+              showVoiceConfirm(text);
+            }
+          };
+
+          rec.onerror = (e) => {
+            state.voiceListening = false;
+            $("voiceMicBtn").classList.remove("listening");
+            destroyRecognition();
+            if (e.error === "not-allowed") {
+              $("voiceMicBtn").disabled = false;
+              setVoiceStatus("❌ ไม่อนุญาตไมค์ — อนุญาตในเบราว์เซอร์", "");
+              showToast("กดไอคอน 🔒 ข้าง URL แล้วอนุญาต Microphone");
+            } else if (e.error === "no-speech" && state.voiceActive) {
+              setVoiceStatus("ไม่ได้ยินเสียง — ลองพูดอีกครั้ง", "");
+              setTimeout(() => {
+                if (
+                  state.voiceActive &&
+                  !state.loading &&
+                  !state.voiceSpeaking
+                ) {
+                  startListening();
+                }
+              }, 600);
+            } else if (e.error !== "aborted") {
+              $("voiceMicBtn").disabled = false;
+              setVoiceStatus("⚠️ ไมค์ error: " + e.error, "");
+            }
+          };
+
+          rec.onend = () => {
+            state.voiceListening = false;
+            $("voiceMicBtn").classList.remove("listening");
+            if (state.voiceActive && !state.loading && !state.voiceSpeaking) {
+              $("voiceMicBtn").disabled = false;
+            }
+          };
+
+          return rec;
+        }
+
+        async function startBrowserListening() {
+          if (!state.voiceActive || state.voiceSpeaking || state.voiceListening)
+            return;
+          if (!(await ensureMicPermission())) return;
+
+          stopWhisperCapture(false);
+          destroyRecognition();
+          state.recognition = initSpeechRecognition();
+          if (!state.recognition) {
+            showToast(
+              "เบราว์เซอร์ไม่รองรับ Speech Recognition — ใช้ Chrome/Edge",
+            );
+            return;
+          }
+
+          $("voiceInterim").textContent = "";
+          try {
+            state.recognition.start();
+          } catch {
+            destroyRecognition();
+            setTimeout(() => {
+              if (state.voiceActive && !state.voiceSpeaking) startListening();
+            }, 400);
+          }
+        }
+
+        async function startListening() {
+          if (isVoiceConfirmVisible()) hideVoiceConfirm();
+          if (getVoiceSttMode() === "whisper" && canUseWhisper()) {
+            return startWhisperListening();
+          }
+          return startBrowserListening();
+        }
+
+        async function speakAndListen(speakText) {
+          if (!state.voiceActive) return;
+          state.voiceSpeaking = true;
+          setVoiceStatus("🔊 AI กำลังพูด...", "speaking");
+          $("voiceMicBtn").disabled = true;
+          await speakAsync(speakText);
+          state.voiceSpeaking = false;
+          if (!state.voiceActive) return;
+          setVoiceStatus("พร้อมฟัง — พูดตอบได้เลย", "listening");
+          await new Promise((r) => setTimeout(r, 350));
+          await startListening();
+        }
+
+        function stopVoiceSession() {
+          state.voiceActive = false;
+          state.voiceListening = false;
+          state.voiceSpeaking = false;
+          window.speechSynthesis?.cancel();
+          stopWhisperCapture(false);
+          destroyRecognition();
+          $("voiceMicBtn").classList.remove("listening");
+          $("voiceMicBtn").disabled = false;
+          $("voiceStopBtn").classList.add("hidden");
+          hideVoiceConfirm();
+          setVoiceStatus("หยุด Voice แล้ว", "");
+          $("voiceInterim").textContent = "";
+        }
+
+        function parseVoiceResponse(text) {
+          const { display: tracked, track } = parseTracking(text);
+          const speakMatch = tracked.match(/\[\[SPEAK:(.*?)\]\]/s);
+          const speakText = speakMatch
+            ? speakMatch[1].trim()
+            : extractSpeakable(tracked);
+          const display = tracked.replace(/\[\[SPEAK:.*?\]\]/s, "").trim();
+          return { display, speakText, track };
+        }
+
+        function updateInputUI() {
+          const isVoice = state.mode === "voice";
+          $("voicePanel").classList.toggle("hidden", !isVoice);
+          $("textInputWrap").classList.toggle("hidden", isVoice);
+          $("voiceStopBtn").classList.toggle(
+            "hidden",
+            !isVoice || !state.voiceActive,
+          );
+        }
+
+        function trimHistory(messages) {
+          const pairs = messages.filter(
+            (m) => m.role === "user" || m.role === "assistant",
+          );
+          if (pairs.length <= MAX_TURNS * 2) return messages;
+          return pairs.slice(-MAX_TURNS * 2);
+        }
+
+        function renderChatFromMessages() {
+          chatArea.innerHTML = "";
+          state.messages.forEach((m) => {
+            if (m.role === "user") appendBubble("user", m.content);
+            else if (m.role === "assistant") {
+              if (state.mode === "voice") {
+                const { display, speakText } = parseVoiceResponse(m.content);
+                appendBubble("ai", display, speakText);
+              } else {
+                const { display } = parseTracking(m.content);
+                appendBubble("ai", display, extractSpeakable(display));
+              }
+            }
+          });
+        }
+
+        function extractSpeakable(text) {
+          const lines = text.split("\n").filter((l) => /[a-zA-Z]/.test(l));
+          return (
+            lines.slice(0, 3).join(". ").slice(0, 200) || text.slice(0, 150)
+          );
+        }
+
+        function beginnerReplyHintExtra() {
+          if (state.level !== "beginner") return "";
+          if (state.mode !== "conversation" && state.mode !== "voice")
+            return "";
+          return `
+
+BEGINNER REPLY HINTS (required — light nudge only):
+- After EVERY English question, add ONE short hint line (not full answers)
+- Format exactly: 💡 ใบ้: [Thai nudge + 2–4 key English words/phrases only]
+- Example: 💡 ใบ้: ลองใช้ "I like" + ชื่ออาหาร
+- Example: 💡 ใบ้: ตอบ Yes/No แล้วตามด้วย because...
+- NEVER write complete example sentences (no "I like noodles." / "My favorite food is pizza.")
+- Max ~15 words in the hint line; keywords only, let the learner build the sentence
+${state.mode === "voice" ? "- Voice: hint in chat text ONLY — never inside [[SPEAK:...]]" : ""}`;
+        }
+
+        function modeSystemExtra() {
+          const mode = state.assessing ? "assessment" : state.mode;
+          switch (mode) {
+            case "conversation":
+              return `Mode: CONVERSATION PRACTICE. Start by asking an engaging question in English appropriate for ${state.level} level. After each user reply: show what was correct, fix errors with Thai explanation, encourage, then ask a follow-up question. Always end with a new English question.${beginnerReplyHintExtra()}`;
+            case "voice":
+              return `Mode: VOICE CONVERSATION (hands-free spoken practice).
+- User speaks answers via microphone — text you receive is AUTO-TRANSCRIBED (speech-to-text) and OFTEN WRONG for Thai accents
+- Common STT errors: homophones and similar sounds (e.g. "newton" may mean "noodle", "bear" may mean "beer", "ship" may mean "sheep")
+- ALWAYS infer the user's intended meaning from: (1) your previous question/topic, (2) full conversation context, (3) what makes sense for a ${state.level} Thai learner
+- Respond to what they MEANT to say — if STT was wrong, gently teach the correct word in Thai (e.g. "Did you mean noodle? Good choice!")
+- Do NOT embarrass them for STT errors — treat wrong words as transcription noise, not their mistake
+- Start by asking an engaging question in English for ${state.level} level
+- After each reply: show Thai correction/explanation in chat (keep brief, 2-4 lines max)
+- Always end with a new English question
+- Add exactly one line at the end: [[SPEAK:English only — short correction if needed, then the next question. Max 2-3 sentences, natural spoken tone. No Thai in SPEAK tag.]]
+- Keep chat text concise for reading while user listens${beginnerReplyHintExtra()}`;
+            case "pronunciation":
+              return `Mode: PRONUNCIATION GUIDE. When user sends a word/phrase, respond with:
+1) Word/phrase
+2) Syllable breakdown (e.g. com-pu-ter)
+3) Simple pronunciation guide comparing to Thai sounds where helpful
+4) 2 example sentences
+5) Similar-sounding words to watch out for
+Keep format clear with headings.`;
+            case "grammar":
+              return `Mode: GRAMMAR CHECK. When user sends an English sentence, respond with:
+✅ or ❌ Correct or not
+Corrected sentence (if needed)
+Thai explanation of the grammar rule
+2 more example sentences
+Use clear formatting.`;
+            case "vocabulary":
+              return `Mode: VOCABULARY OF THE DAY. Teach exactly 5 English words suitable for ${state.level} level Thai learners. For each word provide: meaning in Thai, example sentence, synonym, memory tip. Number them 1-5. Include English word prominently for each.`;
+            case "assessment":
+              return `Mode: PLACEMENT TEST. You are assessing a Thai learner's English level.
+Current question number: ${state.assessStep + 1} of 3.
+${state.assessStep === 0 ? "Ask ONE simple question (greetings/basic vocab) in English with Thai hint." : ""}
+${state.assessStep === 1 ? "Ask ONE intermediate question (past tense/daily routine) in English with Thai hint." : ""}
+${state.assessStep === 2 ? "Ask ONE question mixing listening comprehension style in English with Thai hint." : ""}
+${state.assessStep >= 3 ? 'Based on all 3 answers, state in Thai: "คุณอยู่ระดับ beginner/intermediate เพราะ ..." Be specific. End with encouragement.' : "Ask only ONE question per message. Do not reveal the final level yet unless this is after question 3 answer."}`;
+            default:
+              return "";
+          }
+        }
+
+        async function sendMessage(text) {
+          if (state.loading || !text.trim()) return;
+          const userText = text.trim();
+          userInput.value = "";
+
+          appendBubble("user", userText);
+          state.messages.push({ role: "user", content: userText });
+          state.messages = trimHistory(state.messages);
+
+          state.loading = true;
+          $("sendBtn").disabled = true;
+          showLoading();
+
+          try {
+            const apiMessages = state.messages.map((m) => ({
+              role: m.role === "assistant" ? "assistant" : "user",
+              content: m.content,
+            }));
+
+            let raw = await callClaude(apiMessages, modeSystemExtra());
+            let { display, track } = parseTracking(raw);
+
+            if (state.mode === "assessment" || state.assessing) {
+              state.assessAnswers.push(userText);
+              localStorage.setItem(
+                STORAGE.assessAnswers,
+                JSON.stringify(state.assessAnswers),
+              );
+              state.assessStep++;
+              localStorage.setItem(
+                STORAGE.assessStep,
+                String(state.assessStep),
+              );
+
+              if (state.assessStep >= 3) {
+                const resultPrompt = `The learner answered 3 placement questions. Answers: ${JSON.stringify(state.assessAnswers)}. 
+Respond ONLY in Thai with: "คุณอยู่ระดับ [beginner/intermediate] เพราะ [reasons]" then brief encouragement.
+Add tracking: [[TRACK:{"correct":true,"mistake":""}]]`;
+                raw = await callClaude(
+                  [{ role: "user", content: resultPrompt }],
+                  resultPrompt,
+                );
+                ({ display, track } = parseTracking(raw));
+                if (/intermediate/i.test(display)) {
+                  state.level = "intermediate";
+                } else {
+                  state.level = "beginner";
+                }
+                localStorage.setItem(STORAGE.level, state.level);
+                updateLevelBadge();
+                state.assessing = false;
+                state.mode = "conversation";
+                localStorage.removeItem(STORAGE.assessStep);
+                localStorage.removeItem(STORAGE.assessAnswers);
+                setTimeout(() => switchMode("conversation"), 1500);
+              }
+            }
+
+            applyTracking(track);
+            state.messages.push({ role: "assistant", content: raw });
+            hideLoading();
+            appendBubble("ai", display, extractSpeakable(display));
+            saveHistory(
+              state.assessing ? "assessment" : state.mode,
+              state.messages,
+            );
+          } catch (err) {
+            hideLoading();
+            appendBubble(
+              "system",
+              "⚠️ " + friendlyApiError(err.message, err.status),
+            );
+            state.messages.pop();
+          }
+
+          state.loading = false;
+          $("sendBtn").disabled = false;
+        }
+
+        async function sendVoiceMessage(userText) {
+          if (state.loading || !userText.trim() || !state.voiceActive) return;
+          hideVoiceConfirm();
+
+          appendBubble("user", "🎤 " + userText);
+          state.messages.push({ role: "user", content: userText });
+          state.messages = trimHistory(state.messages);
+
+          state.loading = true;
+          setVoiceStatus("🤔 AI กำลังคิด...", "thinking");
+          $("voiceMicBtn").disabled = true;
+          showLoading();
+
+          try {
+            const apiMessages = state.messages.map((m) => ({
+              role: m.role === "assistant" ? "assistant" : "user",
+              content: m.content,
+            }));
+
+            const raw = await callClaude(apiMessages, modeSystemExtra());
+            const { display, speakText, track } = parseVoiceResponse(raw);
+
+            applyTracking(track);
+            state.messages.push({ role: "assistant", content: raw });
+            hideLoading();
+            appendBubble("ai", display, speakText);
+            saveHistory("voice", state.messages);
+            state.loading = false;
+            await speakAndListen(speakText);
+          } catch (err) {
+            hideLoading();
+            appendBubble(
+              "system",
+              "⚠️ " + friendlyApiError(err.message, err.status),
+            );
+            state.messages.pop();
+            setVoiceStatus("เกิดข้อผิดพลาด — กดไมค์ลองใหม่", "");
+            $("voiceMicBtn").disabled = false;
+            state.loading = false;
+            return;
+          }
+        }
+
+        async function resumeVoiceSession() {
+          if (!hasApiReady()) {
+            showToast("กด 🆓 ใช้ฟรี หรือใส่ API Key");
+            return;
+          }
+          if (!(await ensureMicPermission())) return;
+          state.voiceActive = true;
+          $("voiceStopBtn").classList.remove("hidden");
+          updateInputUI();
+
+          const last = [...state.messages]
+            .reverse()
+            .find((m) => m.role === "assistant");
+          if (last) {
+            const { speakText } = parseVoiceResponse(last.content);
+            await speakAndListen(speakText);
+          } else {
+            setVoiceStatus("พร้อมฟัง — พูดตอบได้เลย", "");
+            startListening();
+          }
+        }
+
+        async function startVoiceSession() {
+          if (!hasApiReady()) {
+            showToast("กด 🆓 ใช้ฟรี หรือใส่ API Key");
+            return;
+          }
+          if (!isSecureForVoice()) {
+            updateSecurityBanner();
+            showToast("Voice ต้องใช้ HTTPS — รัน start-server-https.bat");
+            return;
+          }
+          if (!(await ensureMicPermission())) return;
+          stopVoiceSession();
+          state.voiceActive = true;
+          $("voiceStopBtn").classList.remove("hidden");
+          updateInputUI();
+          state.messages = [];
+          chatArea.innerHTML = "";
+          appendBubble(
+            "system",
+            "🎙 เริ่มโหมด Voice — AI จะพูดถามก่อน แล้วเปิดไมค์ให้คุณตอบ",
+          );
+          state.loading = true;
+          setVoiceStatus("🤔 AI กำลังเตรียมคำถาม...", "thinking");
+          $("voiceMicBtn").disabled = true;
+          showLoading();
+
+          try {
+            const raw = await callClaude(
+              [
+                {
+                  role: "user",
+                  content:
+                    "Start the voice conversation. Ask me your first spoken question in English.",
+                },
+              ],
+              modeSystemExtra(),
+            );
+            const { display, speakText, track } = parseVoiceResponse(raw);
+            applyTracking(track);
+            hideLoading();
+            chatArea.innerHTML = "";
+            state.messages = [{ role: "assistant", content: raw }];
+            appendBubble("ai", display, speakText);
+            saveHistory("voice", state.messages);
+            state.loading = false;
+            await speakAndListen(speakText);
+          } catch (err) {
+            hideLoading();
+            chatArea.innerHTML = "";
+            appendBubble(
+              "system",
+              "⚠️ " + friendlyApiError(err.message, err.status),
+            );
+            stopVoiceSession();
+          }
+          state.loading = false;
+        }
+
+        async function startConversation() {
+          state.conversationActive = true;
+          $("stopBtn").classList.remove("hidden");
+          state.messages = [];
+          chatArea.innerHTML = "";
+          appendBubble("system", "AI กำลังเริ่มบทสนทนา...");
+          state.loading = true;
+          showLoading();
+          try {
+            const raw = await callClaude(
+              [
+                {
+                  role: "user",
+                  content:
+                    "Start the conversation. Ask me your first question in English.",
+                },
+              ],
+              modeSystemExtra(),
+            );
+            const { display, track } = parseTracking(raw);
+            applyTracking(track);
+            hideLoading();
+            chatArea.innerHTML = "";
+            state.messages = [{ role: "assistant", content: raw }];
+            appendBubble("ai", display, extractSpeakable(display));
+            saveHistory("conversation", state.messages);
+          } catch (err) {
+            hideLoading();
+            chatArea.innerHTML = "";
+            appendBubble(
+              "system",
+              "⚠️ " + friendlyApiError(err.message, err.status),
+            );
+          }
+          state.loading = false;
+        }
+
+        async function loadVocabulary() {
+          chatArea.innerHTML = "";
+          state.messages = [];
+          appendBubble("system", "กำลังสุ่มคำศัพท์ 5 คำ...");
+          state.loading = true;
+          showLoading();
+          try {
+            const raw = await callClaude(
+              [
+                {
+                  role: "user",
+                  content: "Give me 5 vocabulary words for today.",
+                },
+              ],
+              modeSystemExtra(),
+            );
+            const { display, track } = parseTracking(raw);
+            applyTracking(track);
+            hideLoading();
+            chatArea.innerHTML = "";
+            state.messages = [{ role: "assistant", content: raw }];
+            appendBubble(
+              "ai",
+              display,
+              display.replace(/<[^>]+>/g, " ").slice(0, 300),
+            );
+            saveHistory("vocabulary", state.messages);
+          } catch (err) {
+            hideLoading();
+            chatArea.innerHTML = "";
+            appendBubble(
+              "system",
+              "⚠️ " + friendlyApiError(err.message, err.status),
+            );
+          }
+          state.loading = false;
+        }
+
+        function switchMode(mode) {
+          if (state.mode === "voice" && mode !== "voice") stopVoiceSession();
+
+          state.mode = mode;
+          document.querySelectorAll(".mode-tab").forEach((t) => {
+            t.classList.toggle("active", t.dataset.mode === mode);
+          });
+          $("modeHint").textContent = getModeHint(mode) || "";
+          $("stopBtn").classList.toggle("hidden", mode !== "conversation");
+          $("loadVocabBtn").classList.toggle("hidden", mode !== "vocabulary");
+          userInput.placeholder =
+            mode === "pronunciation"
+              ? "พิมพ์คำหรือประโยค..."
+              : mode === "grammar"
+                ? "พิมพ์ประโยคภาษาอังกฤษ..."
+                : mode === "vocabulary"
+                  ? "กดสุ่มคำใหม่ หรือพิมพ์หัวข้อที่อยากเรียน..."
+                  : "พิมพ์คำตอบเป็นภาษาอังกฤษ...";
+          updateInputUI();
+
+          state.messages = loadHistory(mode);
+          if (state.messages.length) {
+            renderChatFromMessages();
+            if (mode === "voice") {
+              setVoiceStatus(
+                "กด 🎙 เพื่อเริ่มพูดต่อ หรือ AI จะพูดคำถามล่าสุดอีกครั้ง",
+                "",
+              );
+            }
+          } else {
+            chatArea.innerHTML = "";
+            if (mode === "conversation") startConversation();
+            else if (mode === "voice") startVoiceSession();
+            else if (mode === "vocabulary") loadVocabulary();
+            else appendBubble("system", MODE_HINTS[mode]);
+          }
+        }
+
+        async function startAssessment() {
+          if (!hasApiReady()) {
+            showToast("กด 🆓 ใช้ฟรี หรือใส่ API Key แล้วกดบันทึก");
+            return;
+          }
+          state.assessing = true;
+          state.assessStep = 0;
+          state.assessAnswers = [];
+          state.mode = "assessment";
+          showMainApp();
+          chatArea.innerHTML = "";
+          state.messages = [];
+          appendBubble("system", "AI จะถาม 3 ข้อเพื่อประเมินระดับ — ตอบได้เลย");
+          state.loading = true;
+          showLoading();
+          try {
+            const raw = await callClaude(
+              [
+                {
+                  role: "user",
+                  content: "Begin placement test. Ask question 1 of 3.",
+                },
+              ],
+              modeSystemExtra(),
+            );
+            const { display } = parseTracking(raw);
+            hideLoading();
+            state.messages = [{ role: "assistant", content: raw }];
+            appendBubble("ai", display, extractSpeakable(display));
+          } catch (err) {
+            hideLoading();
+            appendBubble(
+              "system",
+              "⚠️ " + friendlyApiError(err.message, err.status),
+            );
+          }
+          state.loading = false;
+          $("modeHint").textContent = MODE_HINTS.assessment;
+          document
+            .querySelectorAll(".mode-tab")
+            .forEach((t) => t.classList.remove("active"));
+        }
+
+        // Events
+        $("saveKeyBtn").addEventListener("click", saveApiSettings);
+        $("deleteKeyBtn").addEventListener("click", deleteApiSettings);
+
+        $("providerSelect").addEventListener("change", () => {
+          if (isFreeMode()) deactivateFreeMode(true);
+          const id = $("providerSelect").value;
+          const p = PROVIDERS[id] || PROVIDERS.anthropic;
+          applyProviderUI(id, p.defaultModel);
+        });
+
+        document.querySelectorAll(".btn-free").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            activateFreeProvider(btn.dataset.free);
+          });
+        });
+
+        $("ownKeyBtn").addEventListener("click", deactivateFreeMode);
+
+        $("resetLevelBtn").addEventListener("click", () => {
+          if (!confirm("เริ่มประเมินระดับใหม่?")) return;
+          stopVoiceSession();
+          localStorage.removeItem(STORAGE.onboarding);
+          localStorage.removeItem(STORAGE.level);
+          localStorage.removeItem(STORAGE.correctStreak);
+          localStorage.removeItem(STORAGE.mistakes);
+          localStorage.removeItem(STORAGE.histories);
+          localStorage.removeItem(STORAGE.assessStep);
+          localStorage.removeItem(STORAGE.assessAnswers);
+          state.level = "beginner";
+          state.assessing = false;
+          updateLevelBadge();
+          mainApp.classList.remove("active");
+          welcomeScreen.classList.remove("hidden");
+          chatArea.innerHTML = "";
+        });
+
+        document.querySelectorAll(".level-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const level = btn.dataset.level;
+            if (level === "assess") {
+              startAssessment();
+              return;
+            }
+            if (!hasApiReady()) {
+              showToast("กด 🆓 ใช้ฟรี หรือใส่ API Key แล้วกดบันทึก");
+              return;
+            }
+            state.level = level;
+            localStorage.setItem(STORAGE.level, level);
+            updateLevelBadge();
+            setCorrectStreak(0);
+            setMistakes({});
+            showMainApp();
+          });
+        });
+
+        document.querySelectorAll(".mode-tab").forEach((tab) => {
+          tab.addEventListener("click", () => {
+            if (!hasApiReady()) {
+              showToast("กด 🆓 ใช้ฟรี หรือใส่ API Key");
+              return;
+            }
+            state.assessing = false;
+            switchMode(tab.dataset.mode);
+          });
+        });
+
+        $("sendBtn").addEventListener("click", () =>
+          sendMessage(userInput.value),
+        );
+        userInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage(userInput.value);
+          }
+        });
+
+        $("stopBtn").addEventListener("click", () => {
+          state.conversationActive = false;
+          appendBubble(
+            "system",
+            "⏹ หยุดสนทนาแล้ว — กดล้างแชทหรือเปลี่ยนโหมดเพื่อเริ่มใหม่",
+          );
+        });
+
+        $("clearChatBtn").addEventListener("click", () => {
+          if (state.mode === "voice") stopVoiceSession();
+          state.messages = [];
+          chatArea.innerHTML = "";
+          saveHistory(state.mode, []);
+          if (state.mode === "conversation") startConversation();
+          else if (state.mode === "voice") startVoiceSession();
+          else if (state.mode === "vocabulary") loadVocabulary();
+        });
+
+        $("voiceMicBtn").addEventListener("click", async () => {
+          if (!hasApiReady()) {
+            showToast("กด 🆓 ใช้ฟรี หรือใส่ API Key");
+            return;
+          }
+          if (state.loading || state.voiceSpeaking) return;
+          if (isVoiceConfirmVisible()) {
+            retryVoiceCapture();
+            return;
+          }
+          if (!state.voiceActive) {
+            if (state.messages.length) await resumeVoiceSession();
+            else await startVoiceSession();
+            return;
+          }
+          if (state.voiceListening && state.whisperCapture) {
+            stopWhisperCapture(true);
+            return;
+          }
+          if (!state.voiceListening) await startListening();
+        });
+
+        document.querySelectorAll('input[name="voiceStt"]').forEach((r) => {
+          r.addEventListener("change", () => {
+            localStorage.setItem(STORAGE.voiceStt, r.value);
+            updateVoiceSttUI();
+          });
+        });
+
+        $("voiceConfirmEditBtn").addEventListener(
+          "click",
+          toggleVoiceConfirmEdit,
+        );
+        $("voiceConfirmRetryBtn").addEventListener("click", retryVoiceCapture);
+        $("voiceConfirmSendBtn").addEventListener("click", submitVoiceConfirm);
+        $("voiceConfirmEdit").addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            submitVoiceConfirm();
+          }
+        });
+
+        $("voiceStopBtn").addEventListener("click", () => {
+          stopVoiceSession();
+          appendBubble("system", "⏹ หยุด Voice แล้ว — กด 🎙 เพื่อเริ่มใหม่");
+        });
+
+        $("loadVocabBtn").addEventListener("click", loadVocabulary);
+
+        loadState();
+        checkServerCapabilities().then(() => updateSecurityBanner());
+        updateSecurityBanner();
+      })();
+    </script>
+  </body>
+</html>

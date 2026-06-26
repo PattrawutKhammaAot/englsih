@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แผนเรียนภาษาอังกฤษ 6 เดือน</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="hero">
+    <h1>📚 แผนเรียนภาษาอังกฤษ 6 เดือน</h1>
+    <p class="tagline">เย็นวันละ 1 ชั่วโมง หลังเลิกงาน — เสาร์-อาทิตย์ชิล ๆ ดูหนัง ฝึกพูดกับ AI</p>
+  </header>
+
+  <nav>
+    <ul>
+      <li><a href="#today" class="active">วันนี้เรียนอะไร</a></li>
+      <li><a href="#checklist">Checklist</a></li>
+      <li><a href="#tracker">Streak</a></li>
+      <li><a href="#tips">เคล็ดลับ</a></li>
+      <li><a href="#channels">ช่อง YouTube</a></li>
+      <li><a href="ai.html" style="color:var(--primary);font-weight:600">🤖 AI Tutor</a></li>
+    </ul>
+  </nav>
+
+  <!-- วันนี้เรียนอะไร -->
+  <section id="today">
+    <div class="container" id="todaySection">
+      <h2 class="section-title">📅 เย็นนี้เรียนอะไร</h2>
+      <p class="section-subtitle" id="todayHint">กดปุ่มดูคลิปได้เลย ไม่ต้องไปหาเอง</p>
+
+      <div class="day-badge">
+        <div>วันที่</div>
+        <div class="day-num" id="dayNum">1</div>
+        <div class="phase-tag" id="phaseTag">🏗️ ปูพื้นฐาน</div>
+        <div class="day-type-tag study" id="dayTypeTag">📖 วันเรียน — เย็น 60 นาที</div>
+      </div>
+
+      <div class="day-nav">
+        <button type="button" id="btnPrev">← วันก่อน</button>
+        <input type="number" id="dayInput" min="1" max="180" value="1" style="width:4rem;text-align:center;padding:0.5rem;border:2px solid var(--border);border-radius:8px;font-family:inherit">
+        <button type="button" id="btnGoDay">ไป</button>
+        <button type="button" id="btnNext">วันถัดไป →</button>
+      </div>
+
+      <div class="day-nav">
+        <button type="button" id="btnSetToday" class="primary">📌 ตั้งเป็นวันเรียนปัจจุบัน</button>
+        <button type="button" id="btnCompleteDay">✅ เรียนจบวันนี้ → ไปวันถัดไป</button>
+      </div>
+
+      <div id="segmentList"></div>
+    </div>
+  </section>
+
+  <!-- Checklist -->
+  <section id="checklist" style="background:#f0fdf4">
+    <div class="container">
+      <h2 class="section-title">✅ Checklist เย็นนี้</h2>
+      <p class="section-subtitle">ติ๊กครบทุกช่วง = บันทึก streak อัตโนมัติ · รีเซ็ตทุกวันใหม่</p>
+      <div class="checklist-box">
+        <div id="checklistDate" style="text-align:center;color:var(--text-muted);font-size:0.9rem;margin-bottom:1rem"></div>
+        <div id="checklistItems"></div>
+        <p id="checklistProgress" style="text-align:center;margin-top:0.75rem;color:var(--text-muted)">ทำแล้ว <strong>0/0</strong> ช่วง</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Habit Tracker -->
+  <section id="tracker">
+    <div class="container">
+      <h2 class="section-title">🔥 Streak</h2>
+      <p class="section-subtitle">กดติ๊กวันที่เรียนแล้ว · บันทึกในเครื่อง ไม่หายเมื่อรีเฟรช</p>
+      <div class="tracker-box">
+        <div class="streak-number" id="streakCount">0</div>
+        <div class="streak-label">วันต่อเนื่อง 🔥</div>
+        <div class="motivation-msg" id="motivationMsg"></div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tips -->
+  <section id="tips" style="background:#fefce8">
+    <div class="container">
+      <h2 class="section-title">💡 เคล็ดลับไม่ให้เบื่อ</h2>
+      <div class="tips-grid">
+        <div class="tip-card"><div class="emoji">❤️</div><strong>เรียนจากสิ่งที่ชอบ</strong><p>เกม ซีรีส์ งานอดิเรก — ไม่รู้สึกเป็นบ้าน</p></div>
+        <div class="tip-card"><div class="emoji">🎯</div><strong>ตั้งเป้าเล็ก ๆ</strong><p>10 คำ หรือ 1 คลิป = ชนะแล้ว</p></div>
+        <div class="tip-card"><div class="emoji">📊</div><strong>จดสถิติ</strong><p>ดู streak สะสม มีแรงจูงใจ</p></div>
+        <div class="tip-card"><div class="emoji">🗣️</div><strong>อย่ากลัวพูดผิด</strong><p>ผิดแล้วแก้ = เรียนรู้เร็วที่สุด</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Channels -->
+  <section id="channels">
+    <div class="container">
+      <h2 class="section-title">📺 ช่อง YouTube อ้างอิง</h2>
+      <p class="section-subtitle">แผนรายวันดึงคลิปจากช่องเหล่านี้มาให้แล้ว</p>
+      <div class="channel-grid" id="channelGrid"></div>
+      <div style="margin-top:1.5rem;display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center" id="toolsRow"></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>แผน 180 วัน · เย็นวันละ 1 ชั่วโมง (จ–ศ เรียน · ส-อา ชิล)</p>
+    <p style="margin-top:0.25rem;font-size:0.75rem">อัปเดตแผน: <code>py scripts/generate_plan.py</code></p>
+  </footer>
+
+  <script src="data/plan.js"></script>
+  <script src="data/channels.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    const row = document.getElementById('toolsRow');
+    if (row && window.TOOLS) {
+      row.innerHTML = window.TOOLS.map(t =>
+        `<a href="${t.url}" target="_blank" rel="noopener" style="background:var(--card);padding:0.5rem 0.85rem;border-radius:8px;text-decoration:none;color:var(--text);box-shadow:var(--shadow);font-size:0.85rem">${t.icon} ${t.name}</a>`
+      ).join('');
+    }
+  </script>
+</body>
+</html>
